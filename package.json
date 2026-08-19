@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Static portfolio. No build step, no dependencies.",
   "scripts": {
-    "check": "node check.mjs"
+    "check": "node check.mjs",
+    "test": "node check.mjs"
   }
 }

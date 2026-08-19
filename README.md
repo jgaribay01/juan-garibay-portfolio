@@ -33,8 +33,11 @@ npm run check
 ```
 
 ```
-check: fallbacks and structured data match js/data.js — 7 builds, 7 engineering notes, measured 2026-08-18
+check: fallbacks and structured data match js/data.js — N builds, N engineering notes, measured <date>
 ```
+
+(The real output names the counts and the measurement date. They are elided here on purpose —
+a README that quotes them becomes the fifth copy nobody guards.)
 
 It checks the scriptless fallback **scoped to the `<noscript>` block**, not the whole document —
 an earlier version searched the page globally, which meant a stale figure in the fallback could
