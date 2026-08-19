@@ -1,4 +1,6 @@
 node_modules/
+# Session-local Claude Code config, was ignored before git existed here.
+.claude/
 .DS_Store
 *.log
 # Vercel project link: contains project and org ids, not needed to build.
