@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+*.log
+# Vercel project link: contains project and org ids, not needed to build.
+.vercel
+# Screenshots taken during verification runs.
+img/_*

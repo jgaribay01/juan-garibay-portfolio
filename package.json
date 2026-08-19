@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-showcase",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Static portfolio. No build step, no dependencies.",
+  "scripts": {
+    "check": "node check.mjs"
+  }
+}

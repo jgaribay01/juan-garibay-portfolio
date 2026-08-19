@@ -1,0 +1,626 @@
+/* Page layout. tokens.css owns the palette and component classes; this file
+   arranges them and carries the accessibility corrections.
+
+   Contrast notes, computed against the painted background rather than
+   assumed: dim text (#99a1ad) is 7.6:1 on the page ground and 7.1:1 on a
+   card; faint text (#7c8492) is 5.2:1 and 4.9:1; the accent (#4ade80) is
+   11.3:1 on the ground, which is why it can carry small mono labels safely.
+   All clear 4.5:1 on every surface they are used on. An earlier version of
+   this note claimed 8.9:1 for dim text — inherited, never recomputed, and
+   wrong. Recompute rather than carry a number forward. */
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  padding: var(--space-2) var(--space-3);
+  z-index: 10;
+}
+.skip-link:focus { left: 0; }
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* — nav — */
+.nav--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-wrap: wrap;
+  background: rgba(10, 11, 13, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.nav a:not(.btn) { padding: var(--space-2) var(--space-1); }
+/* .nav a (0,1,1) outranks .btn-primary (0,1,0), so the nav was repainting
+   the call to action in dim grey on green — 1.5:1, effectively unreadable.
+   Restate the button ink at matching specificity. */
+.nav .btn-primary { font-size: 12px; padding: 6px 12px; color: #06240f; }
+
+/* — hero — */
+.hero { padding: var(--space-16) var(--space-4) var(--space-12); }
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* A live dot: the page is about tools that are running right now. */
+.hero-kicker::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-glow);
+}
+.hero-title {
+  font-size: clamp(38px, 6.2vw, 76px);
+  max-width: 20ch;
+  letter-spacing: -0.035em;
+  margin-bottom: var(--space-8);
+}
+
+/* — stat strip: hairline grid, mono figures — */
+.stat-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  background: var(--color-line);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 333px;
+}
+.stat {
+  background: var(--color-surface);
+  padding: var(--space-6) var(--space-4);
+  flex: 1 1 190px;
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value--accent { color: var(--color-accent); }
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-top: var(--space-3);
+}
+
+/* — sections — */
+.section { padding: 0 var(--space-4) var(--space-16); }
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin: 0 0 var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+}
+.section-title::first-line { color: var(--color-text-dim); }
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+}
+.section-head .section-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.sort-control { display: flex; align-items: center; gap: var(--space-3); }
+.sort-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+/* — project grid —
+   Four cards: two up on desktop, so every row is full and the screenshots get
+   real size instead of thumbnail size. */
+.project-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  min-height: 4406px;
+}
+.project {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.project:hover {
+  border-color: var(--color-line-bright);
+  transform: translateY(-2px);
+}
+
+/* Screenshots are light-UI shots on a dark page: framing them in a window
+   chrome keeps them from floating as bright rectangles. */
+.project-media {
+  position: relative;
+  height: 230px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line-bright);
+  background: var(--color-surface-2);
+}
+.project-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: saturate(0.85) contrast(1.02);
+}
+.project-media--empty {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  border-style: dashed;
+}
+
+.project-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.project-index {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-faint);
+}
+.project-name {
+  font-size: 24px;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.project-name a { text-decoration: none; color: var(--color-text); }
+.project-name a:hover { color: var(--color-accent); }
+/* Outbound links announce themselves. */
+.project-name a::after {
+  content: " ↗";
+  font-size: 0.62em;
+  color: var(--color-accent);
+  vertical-align: super;
+}
+.project-desc {
+  font-size: 14px;
+  margin: 0;
+  color: var(--color-text-dim);
+  flex: 1;
+}
+
+/* — spec rows — */
+.spec { border-top: 1px solid var(--color-line); }
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-2) 0;
+}
+.spec-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  white-space: nowrap;
+}
+.spec-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.spec-val--accent { color: var(--color-accent); }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* — cost section — */
+.stat-strip--cost { margin-bottom: var(--space-8); min-height: 333px; }
+.cost-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: start;
+  min-height: 900px;
+}
+.cost-heading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin: 0 0 var(--space-4);
+}
+.cost-split .spec { border-top: 1px solid var(--color-line-bright); }
+
+/* The segmented control hides its radio at 0x0 and repaints the ring on the
+   label via :has(). Without :has() the native ring lands on a zero-size box and
+   is invisible, so give the label its own ring as a floor. */
+.seg-opt:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* — tables — */
+.table-scroll { overflow-x: auto; }
+.table-caption {
+  text-align: left;
+  padding-bottom: var(--space-3);
+  font-size: 13px;
+}
+.table-arrow { color: var(--color-accent); }
+.cell-strong { font-weight: 600; }
+.table td { font-size: 13px; }
+.table .cell-strong { color: var(--color-text); }
+
+.footnote {
+  font-size: 12.5px;
+  line-height: 1.7;
+  margin-top: var(--space-4);
+  max-width: 88ch;
+  color: var(--color-text-dim);
+}
+
+/* — banner — */
+.banner {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-16) var(--space-4);
+}
+.banner-title {
+  font-size: clamp(32px, 5vw, 60px);
+  max-width: 18ch;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-8);
+}
+.banner-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.banner-btn {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 11px 20px;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.banner-btn--solid {
+  background: var(--color-accent);
+  color: #06240f;
+  font-weight: 700;
+}
+.banner-btn--solid:hover { background: var(--color-accent-600); color: #06240f; }
+.banner-btn--outline {
+  border: 1px solid var(--color-line-bright);
+  color: var(--color-text);
+}
+.banner-btn--outline:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+/* — honesty list / footer — */
+.honesty-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  list-style: none;
+  max-width: 88ch;
+}
+.honesty-item {
+  font-size: 13px;
+  color: var(--color-text-dim);
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--color-line-bright);
+}
+.honesty-item strong { color: var(--color-text); }
+
+.footer {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--space-8) var(--space-4);
+  border-top: 1px solid var(--color-line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-dim);
+}
+.footer-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.footer-tag { margin-right: auto; }
+/* WCAG 2.2 SC 2.5.8: standalone links in a flex row, not links inside a
+   sentence, so the 24px minimum target applies. At 12px/1.6 the bare text box
+   is about 19px tall. */
+.footer a {
+  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+/* ── breakpoints ─────────────────────────────────────────────────────────
+   Reserves below are measured with the JS render neutralised, so the space
+   the cards will occupy is held before the script runs. */
+/* Reserves, and why the hero no longer has one: the hero title and stat strip
+   are written into index.html as real markup, so they occupy their true height
+   from first parse and need no reserve at all. That change took measured CLS on
+   a throttled 400kbps load from 0.110 to 0 on desktop and tablet. The 0.043 that
+   remains on a 390px viewport is webfont swap, not layout — it measures 0 with
+   fonts blocked — and is left alone rather than trading the typeface for it.
+   The reserves below still cover the containers that are genuinely script-filled
+   and below the fold. */
+@media (min-width: 640px) {
+  .stat-strip,
+  .stat-strip--cost { min-height: 222px; }
+  .cost-split { min-height: 858px; }
+  .project-grid { min-height: 4240px; }
+}
+
+@media (min-width: 900px) {
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+    min-height: 2158px;
+  }
+  .cost-split { grid-template-columns: 1.1fr 1fr; min-height: 428px; }
+}
+
+@media (min-width: 1100px) {
+  .stat-strip,
+  .stat-strip--cost { min-height: 112px; }
+  .project-grid { min-height: 2158px; }
+  .cost-split { min-height: 428px; }
+}
+
+/* ── the hard part ────────────────────────────────────────────────────────
+   Long-form reasoning, so this section drops the card grid and reads as a
+   numbered list. Measure is capped near 70ch per column: the argument is the
+   product here, and an argument set too wide stops being read. */
+.hard-list {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.hard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-left: 2px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-5);
+}
+
+.hard-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+.hard-index { color: var(--color-accent); font-weight: 600; }
+.hard-system { color: var(--color-text-dim); }
+
+.hard-title {
+  font-size: 21px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-3);
+  max-width: 46ch;
+}
+
+.hard-problem {
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0 0 var(--space-5);
+  max-width: 72ch;
+  color: var(--color-text);
+}
+
+.hard-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line);
+}
+
+.hard-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin: 0 0 var(--space-2);
+}
+
+.hard-body {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+  color: var(--color-text-dim);
+  max-width: 70ch;
+}
+
+.hard-evidence {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+.hard-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+.hard-file {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--color-text-faint);
+  word-break: break-all;
+}
+/* The marker earns its place: it says "this is a path, not prose". */
+.hard-file::before {
+  content: "› ";
+  color: var(--color-accent);
+}
+
+@media (min-width: 900px) {
+  .hard-cols { grid-template-columns: 1fr 1fr; gap: var(--space-8); }
+  .hard { padding: var(--space-8) var(--space-8) var(--space-6); }
+  .hard-title { font-size: 24px; }
+}
+
+/* ── print ────────────────────────────────────────────────────────────────
+   This gets printed for a meeting. A dark page prints as a black slab that
+   drains a cartridge and hides the text, so print inverts to ink-on-paper,
+   drops the screenshots and decoration, and prints link targets in full —
+   a printed page cannot be clicked, so an unresolved href is a dead end. */
+@media print {
+  :root {
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-2: #ffffff;
+    --color-text: #101317;
+    --color-text-dim: #3c434c;
+    --color-text-faint: #5c646f;
+    --color-line: #c8ced6;
+    --color-line-bright: #aab2bd;
+    --color-accent: #12692f;
+    --color-accent-600: #12692f;
+    --color-accent-glow: transparent;
+  }
+
+  html, body { background: #fff !important; color: #101317 !important; }
+
+  .nav--sticky, .banner-actions, .sort-control, .skip-link, .project-media { display: none !important; }
+
+  a { color: #101317 !important; text-decoration: underline; }
+  /* Resolve every link to its destination, since paper cannot be clicked. */
+  .project-name a::after { content: " (" attr(href) ")"; font-size: 0.55em; vertical-align: baseline; }
+
+  .hard, .project, .stat, .banner {
+    background: #fff !important;
+    border-color: #c8ced6 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .section, .hard-list { break-inside: auto; }
+  .section-title, h2, h3 { break-after: avoid; page-break-after: avoid; }
+
+  /* Reserves exist to stop layout shift on load; on paper they only add gaps. */
+  .stat-strip, .stat-strip--cost, .cost-split, .project-grid { min-height: 0 !important; }
+  .project-grid { grid-template-columns: 1fr 1fr !important; }
+  .hard-cols { grid-template-columns: 1fr 1fr !important; }
+
+  .footer { border-top: 1px solid #c8ced6; }
+  .section { padding-bottom: var(--space-8); }
+}
+
+/* The nav is sticky, so an anchored section lands underneath it unless the
+   reserve matches the nav's real height — and the nav wraps. Measured: 176px at
+   320px wide, 123px from 480, 70px from 768. A flat 76px left 100px of the
+   heading hidden on a phone, which is WCAG 2.2 SC 2.4.11 (Focus Not Obscured):
+   you jump to a section and cannot see the section. */
+.section[id],
+.banner[id] { scroll-margin-top: 184px; }
+
+@media (min-width: 480px) {
+  .section[id],
+  .banner[id] { scroll-margin-top: 132px; }
+}
+
+@media (min-width: 768px) {
+  .section[id],
+  .banner[id] { scroll-margin-top: 76px; }
+}
+
+/* If the render throws, the static fallback stays on screen but silently
+   disagrees with the hero. Say so rather than let a visitor read half a page
+   as though it were whole. */
+[data-render-failed] .render-warning { display: block; }
+.render-warning {
+  display: none;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: #3a1d1d;
+  color: #ffd9d9;
+  border-bottom: 1px solid #5c2b2b;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: center;
+}

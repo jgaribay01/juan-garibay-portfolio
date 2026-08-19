@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Juan J Garibay — Six systems, measured</title>
+    <meta
+      name="description"
+      content="Six systems running a real distribution business — what each one replaced, and what the reclaimed time is worth every month."
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0b0d" />
+    <link rel="canonical" href="https://juan-garibay-portfolio.vercel.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Juan J Garibay" />
+    <meta property="og:url" content="https://juan-garibay-portfolio.vercel.app/" />
+    <meta property="og:title" content="Juan J Garibay — Six systems, measured" />
+    <meta
+      property="og:description"
+      content="Six systems running a real distribution business, with the evidence behind each one."
+    />
+    <!-- Card regenerated from og-source.html whenever the headline figures move,
+         so the preview can never drift from the page it advertises. -->
+    <meta property="og:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Six systems running a real distribution business — 6 systems live, $30,748 yearly benefit, $11,412 of that cash, 1,186 tests passing, 1 builder."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Juan J Garibay — Six systems, measured" />
+    <meta
+      name="twitter:description"
+      content="Six systems running a real distribution business, with the evidence behind each one."
+    />
+    <meta name="twitter:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <!-- No image preload: the measured LCP element is the h1 at every
+         breakpoint, so preloading a card screenshot only competes with the
+         font and stylesheet fetches that actually gate first paint. -->
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/page.css" />
+
+    <!-- Entity markup. Mirrors js/data.js, and `npm run check` now fails if it
+         drifts — it had already lost a project and a reworded description,
+         because this block is read by crawlers and never by the browser, so
+         nothing on a normal load would ever show it was wrong. Deliberately
+         carries no rating, price or date that is not in the source data. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "#person",
+            "name": "Juan J Garibay",
+            "jobTitle": "Solo developer",
+            "description": "Solo builder at Tr3s del Valle. Ships production internal tools with AI-assisted development, publishing build time, cost and test-count evidence for each one.",
+            "worksFor": { "@type": "Organization", "name": "Tr3s del Valle" },
+            "sameAs": ["https://github.com/jgaribay01"]
+          },
+          {
+            "@type": "ItemList",
+            "name": "Production tools built by Juan J Garibay",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Rutero TDV",
+                  "url": "https://rutero-tdv.vercel.app/",
+                  "description": "Route planning, driver dispatch and field-sales prospecting for a real distribution fleet.",
+                  "applicationCategory": "BusinessApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-07-08",
+                  "dateModified": "2026-08-04"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Cotizador TDV v8",
+                  "url": "https://cotizador-logistico-tdv-deploy.vercel.app/",
+                  "description": "Generates priced logistics quotes and exports them straight to PDF.",
+                  "applicationCategory": "BusinessApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-07-29",
+                  "dateModified": "2026-08-03"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Data Triage Center",
+                  "description": "Cleans product catalogue rows and validates UPCs, one keystroke at a time.",
+                  "applicationCategory": "BusinessApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-07-21",
+                  "dateModified": "2026-08-06"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 4,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "TDV Outbound Log",
+                  "url": "https://tdv-outbound-log.vercel.app/",
+                  "description": "Scans and logs outbound shipments against a barcode-indexed catalogue.",
+                  "applicationCategory": "BusinessApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-08-06",
+                  "dateModified": "2026-08-06"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 5,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Cotizador Farmers Fresh",
+                  "url": "https://cotizador-farmers-fresh.vercel.app/",
+                  "description": "A second quoting engine, rebuilt from scratch for a different importer and its lanes.",
+                  "applicationCategory": "BusinessApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-08-11",
+                  "dateModified": "2026-08-13"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 6,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Currents",
+                  "url": "https://currents-weld.vercel.app/",
+                  "description": "A swipe-driven learning feed that installs to a phone home screen and works offline.",
+                  "applicationCategory": "EducationalApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-08-11",
+                  "dateModified": "2026-08-18"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 7,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Data layer & OIS connectors",
+                  "description": "The connectors and canonical data model the other systems depend on. Partly built.",
+                  "applicationCategory": "BusinessApplication",
+                  "operatingSystem": "Web",
+                  "creator": { "@id": "#person" },
+                  "dateCreated": "2026-07-09",
+                  "dateModified": "2026-08-13"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#projects">Skip to projects</a>
+    <p class="render-warning" role="alert">
+      Some figures on this page failed to load. The text below is the stored fallback and may be
+      out of date — email jgaribay@tr3sdelvalle.com for the current numbers.
+    </p>
+
+    <nav class="nav nav--sticky" aria-label="Main">
+      <span class="nav-brand">JUAN J GARIBAY</span>
+      <a href="#projects">Projects</a>
+      <a href="#hard">The hard part</a>
+      <a href="#numbers">Numbers</a>
+      <a href="#cost">Cost</a>
+      <a href="#honesty">Method</a>
+      <a href="#contact">Contact</a>
+      <a class="btn btn-primary" href="mailto:jgaribay@tr3sdelvalle.com" data-email>Hire me</a>
+    </nav>
+
+    <main>
+      <section class="hero shell">
+        <div class="hero-kicker">Juan J Garibay — Vibe coder, Tr3s del Valle</div>
+        <!-- js/render.js overwrites both of these from js/data.js, which stays
+             the source of truth. They are written out here as well because an
+             empty hero is what actually caused layout shift: the placeholder
+             title was one line and the real one is five, so everything below it
+             jumped on every load. Matching the static markup to the rendered
+             output removes the shift at its source instead of reserving space
+             for it, and gives a scriptless reader the real headline. `npm run
+             check` fails if these figures drift from data.js. -->
+        <h1 class="hero-title" id="hero-title">
+          6 systems running a distribution business. $30,748 a year returned. They pay 102% of the
+          salary that built them.
+        </h1>
+        <div class="stat-strip" id="stat-strip">
+          <div class="stat">
+            <div class="stat-value">6</div>
+            <div class="stat-label">Systems in the business</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">$30,748</div>
+            <div class="stat-label">Recurring benefit, yearly</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">$11,412</div>
+            <div class="stat-label">Of that, cash</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">$315,000</div>
+            <div class="stat-label">Agency quote to replace, year 1</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value stat-value--accent">102%</div>
+            <div class="stat-label">Of salary, paid back yearly</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell" id="projects" tabindex="-1">
+        <div class="section-head">
+          <h2 class="section-title">01 — Projects</h2>
+          <div class="sort-control">
+            <span class="sort-label" id="sort-label">Sort</span>
+            <span class="seg" role="radiogroup" aria-labelledby="sort-label">
+              <label class="seg-opt">
+                <input type="radio" name="sortBy" value="featured" checked />
+                <span>Featured</span>
+              </label>
+              <label class="seg-opt">
+                <input type="radio" name="sortBy" value="cost avoided" />
+                <span>Cost avoided</span>
+              </label>
+              <label class="seg-opt">
+                <input type="radio" name="sortBy" value="build time" />
+                <span>Build time</span>
+              </label>
+            </span>
+            <span class="sr-only" id="sort-status" role="status" aria-live="polite"></span>
+          </div>
+        </div>
+        <div class="project-grid" id="project-grid"></div>
+        <!-- Crawlers and scriptless readers get all seven builds in text, with
+             the same measured figures the cards show. Keep in step with
+             js/data.js: these drifted two measurement rounds behind once and
+             nobody noticed, because nothing renders them on a normal load. -->
+        <noscript>
+          <article class="footnote">
+            <h3>Rutero TDV — route operations</h3>
+            <p>
+              Route planning, driver dispatch and field-sales prospecting for a real
+              distribution fleet. Live at
+              <a href="https://rutero-tdv.vercel.app/" rel="noopener noreferrer">rutero-tdv.vercel.app</a>.
+              63,036 lines, 267 commits, 1,186 tests, Jul 8 – Aug 17 2026. Contract estimate $45,600.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Cotizador TDV v8 — logistics quoting</h3>
+            <p>
+              Generates priced logistics quotes and exports them straight to PDF. 2,590 lines,
+              Jul 29 – Aug 3 2026. Contract estimate $8,550.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Data Triage Center — catalogue triage</h3>
+            <p>
+              Cleans product catalogue rows and validates UPCs, one keystroke at a time. 1,302
+              lines, 6 commits, Jul 21 – Aug 6 2026. Contract estimate $3,800.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>TDV Outbound Log — shipment logging</h3>
+            <p>
+              Scans and logs outbound shipments against a barcode-indexed catalogue. 1,513
+              lines, 12 commits, Aug 10 – 13 2026. Live at
+              <a href="https://tdv-outbound-log.vercel.app/" rel="noopener noreferrer">tdv-outbound-log.vercel.app</a>.
+              Contract estimate $1,900.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Cotizador Farmers Fresh — logistics quoting</h3>
+            <p>
+              A second quoting engine, rebuilt from scratch for a different importer. 2,154 lines,
+              24 commits, Aug 11 – 14 2026. Live at
+              <a href="https://cotizador-farmers-fresh.vercel.app/" rel="noopener noreferrer">cotizador-farmers-fresh.vercel.app</a>.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Currents — consumer PWA</h3>
+            <p>
+              A swipe-driven learning feed that installs to the home screen and works offline.
+              9,362 lines, 119 commits, Aug 11 – 18 2026. Live at
+              <a href="https://currents-weld.vercel.app/" rel="noopener noreferrer">currents-weld.vercel.app</a>.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Data layer &amp; OIS connectors — data infrastructure</h3>
+            <p>
+              The connectors and canonical data model the other systems depend on. Partly built:
+              the full creation flow into the warehouse system is unfinished. 1,471 lines,
+              Jul 9 – Aug 13 2026. Contract estimate $6,840.
+            </p>
+          </article>
+          <p class="footnote">
+            Contact <a href="mailto:jgaribay@tr3sdelvalle.com">jgaribay@tr3sdelvalle.com</a>.
+          </p>
+        </noscript>
+      </section>
+
+      <section class="section shell" id="hard" tabindex="-1">
+        <h2 class="section-title">02 — The hard part</h2>
+        <p class="footnote text-muted" id="hard-intro">
+          Lines of code and passing tests measure volume, not judgement. These are the constraints
+          that actually took thinking. Each one names the file where the reasoning sits next to the
+          fix, so none of it has to be taken on trust.
+        </p>
+        <div class="hard-list" id="hard-list"></div>
+        <!-- Same contract as the project grid: the argument survives without
+             JavaScript, in short form. Keep in step with HARD_PARTS. -->
+        <noscript>
+          <article class="footnote">
+            <h3>Rutero TDV — a delivery confirmed with no signal</h3>
+            <p>
+              A driver marks an order delivered in a dead zone and the phone retries later, by
+              which time the office may have reopened that order. Every close is conditioned on
+              the row version the driver saw, so a repeat matches nothing and a stale close is
+              dropped. See supabase/migrations/20260814060000_orders_write_discipline.sql.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Rutero TDV — several reps, one shared phone</h3>
+            <p>
+              The first version treated "gone from the queue" as "safely delivered" and destroyed
+              the only proof a visit happened. Queued changes now carry their owner and are re-read
+              at the moment of sending. See app/src/services/visitSync.ts.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Rutero TDV — widening one permission opened a door</h3>
+            <p>
+              Giving drivers all six territories meant a stolen login could erase another rep's
+              visit and sign it as theirs. A trigger restores the original author on any non-admin
+              attempt to change it. See
+              supabase/migrations/20260813180000_visit_author_and_photo_owner_hardening.sql.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Cotizador TDV v8 — splitting one truck's freight fairly</h3>
+            <p>
+              Two legs, two currencies, and products that ride only part of the way. Two
+              independent cost pools divided by units, cases, weight or value, with manual
+              overrides layered on top so one line cannot move the pool under the others.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>TDV Outbound Log — a barcode a cheap scanner will read</h3>
+            <p>
+              A hand-written Code 128 encoder with no library, plus a self-test that measures the
+              bars back out of the drawing and decodes them, checking the checksum and that the
+              text matches the product code that went in. See verify-barcodes.js.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Data Triage Center — a barcode can be valid and still be wrong</h3>
+            <p>
+              Check-digit maths across four formats, plus collision checks against both the live
+              sheet and the unsaved edit queue, and brand-prefix cross-referencing. See
+              catalog-logic.js.
+            </p>
+          </article>
+          <article class="footnote">
+            <h3>Currents — knowing what day it is on someone else's phone</h3>
+            <p>
+              A UTC timestamp stamps an evening session in Mexico with tomorrow's date. Day keys
+              are built from local calendar fields; differences are read as UTC midnights so the
+              count is exact across a clock change. See src/lib/streak.js.
+            </p>
+          </article>
+        </noscript>
+      </section>
+
+      <section class="section shell" id="numbers" tabindex="-1">
+        <h2 class="section-title">03 — What each tool replaced</h2>
+        <div class="table-scroll">
+          <table class="table">
+            <caption class="table-caption text-muted">
+              The process before, the process now, and what the reclaimed time is worth every month.
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Tool</th>
+                <th scope="col">Before → after</th>
+                <th scope="col">Used to take</th>
+                <th scope="col">Hours back / month</th>
+                <th scope="col">Worth / month</th>
+              </tr>
+            </thead>
+            <tbody id="comparison-body"></tbody>
+            <tfoot>
+              <tr id="comparison-total"></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p class="footnote text-muted" id="rate-note">
+          Contract estimates price each tool's stated build hours at a US contract developer rate.
+          They are a judgement, not a quote received.
+        </p>
+      </section>
+
+      <section class="section shell" id="cost" tabindex="-1">
+        <h2 class="section-title">04 — What it costs to run</h2>
+        <div class="stat-strip stat-strip--cost" id="cost-strip"></div>
+        <div class="cost-split">
+          <div>
+            <h3 class="cost-heading">Where the tokens went</h3>
+            <table class="table">
+              <caption class="table-caption text-muted">
+                Every retained assistant turn on this machine, priced at published API list
+                rates per model.
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Model</th>
+                  <th scope="col">At API list price</th>
+                </tr>
+              </thead>
+              <tbody id="cost-models"></tbody>
+              <tfoot>
+                <tr id="cost-models-total"></tr>
+              </tfoot>
+            </table>
+          </div>
+          <div>
+            <h3 class="cost-heading">The two comparisons</h3>
+            <div class="spec" id="cost-compare"></div>
+            <p class="footnote text-muted" id="cost-caveat"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell" id="honesty" tabindex="-1">
+        <h2 class="section-title">05 — How these numbers were made</h2>
+        <p class="footnote text-muted" id="evidence-note">
+          Measured from git history, the file system and Claude Code session transcripts, all read
+          on 2026-08-18. Line counts use one method across all seven builds: authored source only,
+          excluding dependencies, build output, third-party libraries and generated files. Counting
+          another way moves these figures by up to three times, so the method travels with the
+          number. Several systems are still in active development, so these are a snapshot rather
+          than a ceiling — the Rutero test count rose from 749 to 1,186 in the five days before this
+          reading.
+        </p>
+        <p class="footnote text-muted">
+          Tools cloned to run and learn from, not authored by me — not counted above:
+        </p>
+        <ul class="honesty-list" id="tools-i-run"></ul>
+      </section>
+
+      <section class="banner" id="contact" tabindex="-1">
+        <div class="shell">
+          <h2 class="banner-title">A team's worth of output. One builder's headcount.</h2>
+          <div class="banner-actions">
+            <a
+              class="banner-btn banner-btn--solid"
+              href="mailto:jgaribay@tr3sdelvalle.com"
+              data-email
+              >Get in touch</a
+            >
+            <a class="banner-btn banner-btn--outline" href="#projects">See the work</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span class="footer-brand">JUAN J GARIBAY</span>
+      <span class="text-muted footer-tag">Vibe coder — Tr3s del Valle</span>
+      <a href="https://github.com/jgaribay01" rel="noopener noreferrer" target="_blank">GitHub</a>
+      <a href="mailto:jgaribay@tr3sdelvalle.com" data-email="text">jgaribay@tr3sdelvalle.com</a>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/render.js"></script>
+  </body>
+</html>

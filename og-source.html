@@ -1,0 +1,186 @@
+<!doctype html>
+<!-- Source for img/og.png. Rendered at exactly 1200x630 and screenshotted;
+     never served. Kept in the repo so the card can be regenerated when the
+     figures change, instead of becoming a stale binary nobody can rebuild.
+     Excluded from deploys via .vercelignore. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: #0a0b0d;
+        color: #e8ecf1;
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 62px 68px 48px;
+        position: relative;
+      }
+
+      /* Faint grid: the page's hairline language, not decoration for its own sake. */
+      body::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(circle at 78% 12%, #000 0%, transparent 62%);
+        -webkit-mask-image: radial-gradient(circle at 78% 12%, #000 0%, transparent 62%);
+      }
+
+      .glow {
+        position: absolute;
+        top: -280px;
+        right: -180px;
+        width: 620px;
+        height: 620px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(74, 222, 128, 0.14) 0%, transparent 68%);
+      }
+
+      .top { position: relative; }
+
+      .kicker {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: #4ade80;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 34px;
+      }
+      .kicker::before {
+        content: '';
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #4ade80;
+        box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.16);
+      }
+
+      h1 {
+        font-size: 68px;
+        line-height: 1.04;
+        letter-spacing: -0.035em;
+        font-weight: 700;
+        max-width: 17ch;
+      }
+      h1 em { font-style: normal; color: #4ade80; }
+
+      .sub {
+        margin-top: 26px;
+        font-size: 21px;
+        line-height: 1.5;
+        color: #99a1ad;
+        max-width: 52ch;
+      }
+
+      /* Stat strip mirrors the live page: hairline gaps, tabular mono figures. */
+      .stats {
+        position: relative;
+        display: flex;
+        gap: 1px;
+        background: #1c2027;
+        border-top: 1px solid #1c2027;
+      }
+      .stat {
+        flex: 1;
+        background: #0a0b0d;
+        padding: 26px 4px 30px;
+      }
+      .stat-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 600;
+        font-size: 33px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat-value.accent { color: #4ade80; }
+      .stat-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: #99a1ad;
+        margin-top: 12px;
+      }
+
+      .byline {
+        position: absolute;
+        top: 62px;
+        right: 68px;
+        text-align: right;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px;
+        letter-spacing: 0.05em;
+        color: #6b7380;
+        line-height: 1.9;
+      }
+      .byline strong {
+        display: block;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #e8ecf1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow"></div>
+
+    <div class="byline">
+      <strong>Juan J Garibay</strong>
+      Tr3s del Valle
+    </div>
+
+    <div class="top">
+      <div class="kicker">Measured 18 Aug 2026</div>
+      <h1>Six systems running a <em>real</em> distribution business.</h1>
+      <p class="sub">
+        What each one replaced, what the reclaimed time is worth, and the method behind every
+        number on the page.
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Systems live</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value accent">$30,748</div>
+        <div class="stat-label">Yearly benefit</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">$11,412</div>
+        <div class="stat-label">Of that, cash</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1,186</div>
+        <div class="stat-label">Tests passing</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1</div>
+        <div class="stat-label">Builder</div>
+      </div>
+    </div>
+  </body>
+</html>
