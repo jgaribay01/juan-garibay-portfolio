@@ -124,6 +124,27 @@
   }
 
   function renderMedia(project, index) {
+    if (project.demo) {
+      // Click to play, not autoplay: the file is ~400KB and the page has spent
+      // real effort staying light. The poster carries the same visual weight as
+      // the screenshots on the other cards until someone chooses to watch.
+      const video = el('video', {
+        class: 'project-video',
+        poster: project.demo.poster,
+        controls: '',
+        preload: 'none',
+        playsinline: '',
+        muted: '',
+        loop: '',
+        width: 360,
+        height: 780,
+        'aria-label': project.demo.label,
+      }, [
+        el('source', { src: project.demo.webm, type: 'video/webm' }),
+        el('source', { src: project.demo.mp4, type: 'video/mp4' }),
+      ]);
+      return el('div', { class: 'project-media project-media--video' }, [video]);
+    }
     if (project.image) {
       return el('div', { class: 'project-media grayscale' }, [
         el('img', {

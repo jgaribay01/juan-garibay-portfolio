@@ -103,7 +103,7 @@ html { scroll-behavior: smooth; }
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  min-height: 333px;
+  min-height: 554px;
 }
 .stat {
   background: var(--color-surface);
@@ -173,7 +173,7 @@ html { scroll-behavior: smooth; }
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-4);
-  min-height: 4406px;
+  min-height: 6091px;
 }
 .project {
   position: relative;
@@ -281,13 +281,13 @@ html { scroll-behavior: smooth; }
 .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* — cost section — */
-.stat-strip--cost { margin-bottom: var(--space-8); min-height: 333px; }
+.stat-strip--cost { margin-bottom: var(--space-8); min-height: 554px; }
 .cost-split {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-8);
   align-items: start;
-  min-height: 900px;
+  min-height: 1247px;
 }
 .cost-heading {
   font-family: var(--font-mono);
@@ -416,34 +416,51 @@ html { scroll-behavior: smooth; }
 /* ── breakpoints ─────────────────────────────────────────────────────────
    Reserves below are measured with the JS render neutralised, so the space
    the cards will occupy is held before the script runs. */
-/* Reserves, and why the hero no longer has one: the hero title and stat strip
-   are written into index.html as real markup, so they occupy their true height
-   from first parse and need no reserve at all. That change took measured CLS on
-   a throttled 400kbps load from 0.110 to 0 on desktop and tablet. The 0.043 that
-   remains on a 390px viewport is webfont swap, not layout — it measures 0 with
-   fonts blocked — and is left alone rather than trading the typeface for it.
-   The reserves below still cover the containers that are genuinely script-filled
-   and below the fold. */
-@media (min-width: 640px) {
+/* Reserves for the containers the script fills.
+   The hero needs none: its title and stat strip are written into index.html as
+   real markup, so they hold their own height from first parse.
+
+   Every value below was re-measured on 2026-08-21, after the source link, the
+   self-hosted faces and the Currents demo each changed how tall things are.
+   The previous set was stale enough that the project grid was reserving 2158px
+   for content that had grown to 3099px — a 941px jump on every load. Each band
+   takes the tallest measurement inside it, because over-reserving costs a gap
+   and under-reserving costs a shift. */
+@media (min-width: 480px) {
+  .stat-strip { min-height: 351px; }
+  .stat-strip--cost { min-height: 333px; }
+  .cost-split { min-height: 1038px; }
+  .project-grid { min-height: 5491px; }
+}
+
+@media (min-width: 560px) {
+  .stat-strip { min-height: 333px; }
+  .cost-split { min-height: 1017px; }
+  .project-grid { min-height: 5331px; }
+}
+
+@media (min-width: 700px) {
   .stat-strip,
-  .stat-strip--cost { min-height: 222px; }
-  .cost-split { min-height: 858px; }
-  .project-grid { min-height: 4240px; }
+  .stat-strip--cost { min-height: 223px; }
+  .cost-split { min-height: 975px; }
+  .project-grid { min-height: 5158px; }
 }
 
 @media (min-width: 900px) {
+  /* The strip regains a row here as the grid goes two-up, so it grows. */
+  .stat-strip { min-height: 240px; }
   .project-grid {
     grid-template-columns: repeat(2, 1fr);
-    min-height: 2158px;
+    min-height: 3243px;
   }
-  .cost-split { grid-template-columns: 1.1fr 1fr; min-height: 428px; }
+  .cost-split { grid-template-columns: 1.1fr 1fr; min-height: 604px; }
 }
 
 @media (min-width: 1100px) {
-  .stat-strip,
+  .stat-strip { min-height: 130px; }
   .stat-strip--cost { min-height: 112px; }
-  .project-grid { min-height: 2158px; }
-  .cost-split { min-height: 428px; }
+  .project-grid { min-height: 3139px; }
+  .cost-split { min-height: 542px; }
 }
 
 /* ── the hard part ────────────────────────────────────────────────────────
@@ -688,3 +705,64 @@ code {
   border-radius: 3px;
 }
 .footnote a { color: var(--color-accent); }
+
+/* ── motion ───────────────────────────────────────────────────────────────
+   Scroll-driven, CSS only — no JavaScript, no observer, no library. The page
+   is a document, so this is entry only: exit animations on a page someone is
+   reading pull attention backwards.
+
+   `cover` rather than `entry` on purpose. An `entry` range completes when the
+   element is fully visible, and several hard-part cards are taller than the
+   viewport, so they would never finish and would sit permanently faded.
+   `cover` measures the element's whole pass through the viewport and always
+   completes.
+
+   Only opacity and transform animate, so this adds no layout shift. Guarded on
+   both reduced-motion and support: without `animation-timeline` the rule never
+   applies and the content is simply there, which is the correct fallback. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+    }
+
+    .project,
+    .hard {
+      animation: rise auto linear backwards;
+      animation-timeline: view();
+      animation-range: cover 0% cover 18%;
+    }
+  }
+}
+
+/* A recording of the app running, in the same frame the screenshots use. The
+   video is portrait because the app is a phone app; letterboxing it into the
+   landscape card would shrink it to nothing, so the frame centres it on the
+   card surface instead. */
+.project-media--video {
+  /* The screenshots are landscape; this is a phone app, so its recording is
+     portrait. Squeezed into the 230px screenshot frame it would be a 106px
+     sliver, so this card gets a taller frame and the video is centred in it at
+     its own aspect ratio. */
+  height: 420px;
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-2);
+  padding: var(--space-2) 0;
+}
+.project-video {
+  /* An explicit pixel cap, not a percentage: inside an auto-sized grid row the
+     percentage resolves against the row the video itself defines, so both
+     `height: 100%` and `max-height: 100%` left it at its full 780px and it
+     overflowed the card. */
+  max-height: 396px;
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  display: block;
+}

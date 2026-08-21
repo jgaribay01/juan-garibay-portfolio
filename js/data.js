@@ -328,6 +328,16 @@ const PORTFOLIO = (() => {
     {
       id: 'currents',
       name: 'Currents',
+      // Recorded from the live app on 2026-08-21: onboarding, the card feed,
+      // and the Learn view. No account, no business data — Currents is the one
+      // build here that is public by design, which is why it is the one shown
+      // moving. `preload: none`, so it costs nothing until someone asks for it.
+      demo: {
+        mp4: 'img/currents-demo.mp4',
+        webm: 'img/currents-demo.webm',
+        poster: 'img/currents-demo-poster.webp',
+        label: 'Screen recording of Currents: choosing topics, reading cards in the feed, and the Learn view with streak and XP.',
+      },
       cat: 'Consumer PWA',
       desc: 'A swipe-driven learning feed that installs to a phone home screen and works offline.',
       status: 'Live — installable',
