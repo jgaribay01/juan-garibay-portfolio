@@ -291,6 +291,9 @@ html { scroll-behavior: smooth; }
 }
 .cost-heading {
   font-family: var(--font-mono);
+  /* An h3 inherits the browser's bold. JetBrains Mono ships 400/500/600, so
+     700 was being synthesised — a fake bold beside real ones. */
+  font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -315,7 +318,8 @@ html { scroll-behavior: smooth; }
   font-size: 13px;
 }
 .table-arrow { color: var(--color-accent); }
-.cell-strong { font-weight: 600; }
+/* 700 is shipped, 600 is not — asking for 600 got a synthesised bold. */
+.cell-strong { font-weight: 700; }
 .table td { font-size: 13px; }
 .table .cell-strong { color: var(--color-text); }
 
@@ -355,7 +359,8 @@ html { scroll-behavior: smooth; }
 .banner-btn--solid {
   background: var(--color-accent);
   color: #06240f;
-  font-weight: 700;
+  /* 600 is the heaviest mono face shipped; 700 was synthesised. */
+  font-weight: 600;
 }
 .banner-btn--solid:hover { background: var(--color-accent-600); color: #06240f; }
 .banner-btn--outline {
@@ -624,3 +629,62 @@ html { scroll-behavior: smooth; }
   font-size: 13px;
   text-align: center;
 }
+
+/* ── defer off-screen rendering ───────────────────────────────────────────
+   The page is ~17,000px tall on a phone and every section is laid out and
+   painted up front. `content-visibility: auto` lets the browser skip that work
+   until a section approaches the viewport.
+
+   #projects is deliberately absent: it is above the fold at desktop widths
+   (measured top 797px against an 844px viewport), and applying the property to
+   above-the-fold content forces the browser to evaluate containment before
+   first paint, which costs more than it saves.
+
+   The paired `contain-intrinsic-size` is mandatory — without it an off-screen
+   section collapses to zero height and the scrollbar jumps as you scroll. The
+   values are measured, and the `auto` keyword lets the browser replace them
+   with the real height once a section has been rendered once. */
+#hard,
+#numbers,
+#cost,
+#honesty,
+#contact {
+  content-visibility: auto;
+}
+
+/* Re-measured against the current content and the self-hosted faces. The first
+   pass used heights taken before the source-link paragraph was added, which
+   left #honesty 165px short — an estimate that is wrong is worse than none,
+   because the page jumps when the section is finally rendered. */
+#hard { contain-intrinsic-size: auto 4996px; }
+#numbers { contain-intrinsic-size: auto 2082px; }
+#cost { contain-intrinsic-size: auto 1821px; }
+#honesty { contain-intrinsic-size: auto 663px; }
+#contact { contain-intrinsic-size: auto 311px; }
+
+@media (min-width: 900px) {
+  #hard { contain-intrinsic-size: auto 3163px; }
+  #numbers { contain-intrinsic-size: auto 914px; }
+  #cost { contain-intrinsic-size: auto 800px; }
+  #honesty { contain-intrinsic-size: auto 452px; }
+  #contact { contain-intrinsic-size: auto 402px; }
+}
+
+/* Printing must render everything, including sections never scrolled to. */
+@media print {
+  #hard, #numbers, #cost, #honesty, #contact {
+    content-visibility: visible;
+    contain-intrinsic-size: auto none;
+  }
+}
+
+/* Inline code in prose — used once, to name the command that guards the page. */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.footnote a { color: var(--color-accent); }

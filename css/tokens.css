@@ -148,7 +148,9 @@ a { color: var(--color-accent); text-underline-offset: 3px; }
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: #06240f;
-  font-weight: 700;
+  /* .btn is mono, and 600 is the heaviest mono face shipped. Asking for 700
+     produced a synthesised bold — heavier and softer than the real cut. */
+  font-weight: 600;
 }
 .btn-primary:hover {
   background: var(--color-accent-600);

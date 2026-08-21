@@ -1,0 +1,65 @@
+/* Self-hosted type.
+ *
+ * Previously two Google origins: a render-blocking stylesheet from
+ * fonts.googleapis.com, which then pointed at woff2 files on fonts.gstatic.com
+ * — two sequential DNS + TLS handshakes before the first glyph could even be
+ * requested, and every visitor's IP handed to a third party to read a page
+ * about one person's work.
+ *
+ * Only the faces the page actually renders are shipped. Measured in the
+ * browser: Space Grotesk 500 was never loaded, so it is not here. Subset to
+ * Latin plus the punctuation and arrows the copy uses — a range rather than a
+ * per-glyph list, because the copy is data-driven and a tight subset would
+ * break the day someone edits a sentence.
+ */
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("fonts/space-grotesk-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("fonts/space-grotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/jetbrains-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/jetbrains-mono-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/jetbrains-mono-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Normalise the fallback's x-height to the web font's while it swaps.
+   `font-display: swap` means the fallback paints first; without this the
+   substitution changes the space the text occupies and moves the page. It is
+   what remained of this site's layout shift after everything else was
+   reserved. Baseline since July 2024; browsers without it simply render the
+   fallback at its own scale, which is today's behaviour. */
+body { font-size-adjust: from-font; }
+.mono,
+[class*="mono"],
+code,
+kbd,
+samp,
+pre { font-size-adjust: from-font; }

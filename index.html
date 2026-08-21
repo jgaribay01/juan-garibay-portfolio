@@ -39,12 +39,12 @@
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-    />
+    <!-- Type is self-hosted; see css/fonts.css for why. The hero headline and
+         the mono kicker above it are the first text painted, so those two faces
+         are preloaded rather than waiting on the stylesheet to be parsed. -->
+    <link rel="preload" href="css/fonts/space-grotesk-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="css/fonts/jetbrains-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="css/fonts.css" />
     <!-- No image preload: the measured LCP element is the h1 at every
          breakpoint, so preloading a card screenshot only competes with the
          font and stylesheet fetches that actually gate first paint. -->
@@ -471,6 +471,15 @@
           than a ceiling — the Rutero test count rose from 749 to 1,186 in the five days before this
           reading.
         </p>
+        <p class="footnote">
+          The check that enforces this is public. The same figures live in four places on this page
+          — the data file, the hero, the scriptless fallback and the structured data for crawlers —
+          and three of those are never rendered on a normal load, so they drift silently. They did.
+          <a href="https://github.com/jgaribay01/juan-garibay-portfolio" rel="noopener noreferrer" target="_blank">Read
+          the source and the guard</a>: <code>npm run check</code> fails the build if any copy
+          disagrees with the data file.
+        </p>
+
         <p class="footnote text-muted">
           Tools cloned to run and learn from, not authored by me — not counted above:
         </p>
@@ -496,6 +505,7 @@
     <footer class="footer">
       <span class="footer-brand">JUAN J GARIBAY</span>
       <span class="text-muted footer-tag">Vibe coder — Tr3s del Valle</span>
+      <a href="https://github.com/jgaribay01/juan-garibay-portfolio" rel="noopener noreferrer" target="_blank">Source</a>
       <a href="https://github.com/jgaribay01" rel="noopener noreferrer" target="_blank">GitHub</a>
       <a href="mailto:jgaribay@tr3sdelvalle.com" data-email="text">jgaribay@tr3sdelvalle.com</a>
     </footer>

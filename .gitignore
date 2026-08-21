@@ -7,3 +7,5 @@ node_modules/
 .vercel
 # Screenshots taken during verification runs.
 img/_*
+# Unsubset originals, kept only while verifying the subset.
+css/fonts/full/
