@@ -19,7 +19,7 @@
 const PORTFOLIO = (() => {
   'use strict';
 
-  const MEASURED_ON = '2026-08-18';
+  const MEASURED_ON = '2026-08-22';
 
   /** US contract developer rate, public market range 2026. Retained for the
       build-cost figures, which are no longer the page's headline argument. */
@@ -180,12 +180,13 @@ const PORTFOLIO = (() => {
       desc: 'Route planning, driver dispatch and field-sales prospecting for a real distribution fleet.',
       status: 'Live in production',
       url: 'https://rutero-tdv.vercel.app/',
-      period: { from: '2026-07-08', to: '2026-08-17' },
-      activeDays: 21,
-      loc: 63036,
-      commits: 267,
-      tests: 1186,
-      verified: '267 commits over 21 days, one author by email (git shortlog -sne), 18 Aug 2026',
+      period: { from: '2026-07-08', to: '2026-08-20' },
+      activeDays: 24,
+      loc: 69782,
+      commits: 277,
+      tests: 1228,
+      verified:
+        '277 commits over 24 days, one author by email (git shortlog -sne); 1,228 tests passing (vitest run); 22 Aug 2026',
       stack: ['TypeScript', 'React', 'Vite', 'Node', 'Supabase', 'Docker', 'Mapbox', 'Vercel'],
       estimatedBuildHours: 480,
       estimateBasis:
@@ -221,10 +222,11 @@ const PORTFOLIO = (() => {
       url: 'https://cotizador-logistico-tdv-deploy.vercel.app/',
       period: { from: '2026-07-29', to: '2026-08-03' },
       activeDays: 6,
-      loc: 2590,
+      loc: 2353,
       commits: null,
       tests: null,
-      verified: 'Authored on this machine, 2026-07-29 to 2026-08-03; no version control',
+      verified:
+        'Authored on this machine, 2026-07-29 to 2026-08-03; a repo was initialised 19 Aug 2026 with a single commit, so there is no history to read; 22 Aug 2026',
       stack: ['React', 'jsPDF', 'Vercel'],
       estimatedBuildHours: 90,
       estimateBasis:
@@ -255,10 +257,11 @@ const PORTFOLIO = (() => {
       url: null,
       period: { from: '2026-07-21', to: '2026-08-06' },
       activeDays: 2,
-      loc: 1302,
+      loc: 1555,
       commits: 6,
       tests: null,
-      verified: '6 commits over 2 days, sole author (git shortlog), 18 Aug 2026',
+      verified:
+        '6 commits over 2 days, sole author (git shortlog -sne); no test suite; 22 Aug 2026',
       stack: ['Vanilla JS', 'Google Apps Script', 'localStorage'],
       estimatedBuildHours: 40,
       estimateBasis:
@@ -289,12 +292,13 @@ const PORTFOLIO = (() => {
       status: 'Live in production',
       // Verified 2026-08-07: HTTP 200, title "TDV Outbound Log".
       url: 'https://tdv-outbound-log.vercel.app/',
-      period: { from: '2026-08-10', to: '2026-08-13' },
-      activeDays: 2,
-      loc: 1513,
-      commits: 12,
+      period: { from: '2026-08-10', to: '2026-08-19' },
+      activeDays: 3,
+      loc: 1730,
+      commits: 14,
       tests: null,
-      verified: '12 commits over 2 days, sole author (git shortlog), 18 Aug 2026',
+      verified:
+        '14 commits over 3 days, one author under two emails (git shortlog -sne); no test suite; 22 Aug 2026',
       stack: ['React', 'Vercel'],
       estimatedBuildHours: 20,
       estimateBasis: 'Single-screen scanning UI over a pre-built barcode index.',
@@ -323,10 +327,11 @@ const PORTFOLIO = (() => {
       url: 'https://cotizador-farmers-fresh.vercel.app/',
       period: { from: '2026-08-11', to: '2026-08-14' },
       activeDays: 4,
-      loc: 2154,
+      loc: 2671,
       commits: 24,
-      tests: null,
-      verified: '24 commits over 4 days, sole author (git shortlog), 18 Aug 2026',
+      tests: 62,
+      verified:
+        '24 commits over 4 days, sole author (git shortlog -sne); 62 tests passing (node --test); 22 Aug 2026',
       stack: ['Vanilla JS', 'Google Sheets', 'PDF export', 'Vercel'],
       estimatedBuildHours: 60,
       estimateBasis:
@@ -371,12 +376,13 @@ const PORTFOLIO = (() => {
       // worker and card content all serving. `currents.vercel.app` belongs to
       // someone else; this is the project's own alias.
       url: 'https://currents-weld.vercel.app/',
-      period: { from: '2026-08-11', to: '2026-08-18' },
-      activeDays: 7,
-      loc: 9362,
-      commits: 119,
-      tests: null,
-      verified: '119 commits over 7 days, sole author (git shortlog), 18 Aug 2026',
+      period: { from: '2026-08-11', to: '2026-08-22' },
+      activeDays: 11,
+      loc: 20960,
+      commits: 182,
+      tests: 300,
+      verified:
+        '182 commits over 11 days, sole author (git shortlog -sne); 300 tests passing (node --test); 22 Aug 2026',
       stack: ['PWA', 'Service Worker', 'Vanilla JS', 'Offline-first'],
       estimatedBuildHours: 50,
       estimateBasis:

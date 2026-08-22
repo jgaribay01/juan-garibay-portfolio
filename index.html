@@ -27,7 +27,7 @@
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Five systems running a real distribution business — 5 systems live, $28,162 yearly benefit, $11,412 of that cash, 1,186 tests passing, 1 builder."
+      content="Five systems running a real distribution business — 5 systems live, $28,162 yearly benefit, $11,412 of that cash, 1,590 tests passing, 1 builder."
     />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Juan J Garibay — Five systems, measured" />
@@ -159,7 +159,7 @@
                   "operatingSystem": "Web",
                   "creator": { "@id": "#person" },
                   "dateCreated": "2026-08-11",
-                  "dateModified": "2026-08-18"
+                  "dateModified": "2026-08-22"
                 }
               }
             ]
@@ -259,28 +259,28 @@
               Route planning, driver dispatch and field-sales prospecting for a real
               distribution fleet. Live at
               <a href="https://rutero-tdv.vercel.app/" rel="noopener noreferrer">rutero-tdv.vercel.app</a>.
-              63,036 lines, 267 commits, 1,186 tests, Jul 8 – Aug 17 2026. Contract estimate $45,600.
+              69,782 lines, 277 commits, 1,228 tests, Jul 8 – Aug 20 2026. Contract estimate $45,600.
             </p>
           </article>
           <article class="footnote">
             <h3>Cotizador TDV v8 — logistics quoting</h3>
             <p>
-              Generates priced logistics quotes and exports them straight to PDF. 2,590 lines,
+              Generates priced logistics quotes and exports them straight to PDF. 2,353 lines,
               Jul 29 – Aug 3 2026. Contract estimate $8,550.
             </p>
           </article>
           <article class="footnote">
             <h3>Data Triage Center — catalogue triage</h3>
             <p>
-              Cleans product catalogue rows and validates UPCs, one keystroke at a time. 1,302
+              Cleans product catalogue rows and validates UPCs, one keystroke at a time. 1,555
               lines, 6 commits, Jul 21 – Aug 6 2026. Contract estimate $3,800.
             </p>
           </article>
           <article class="footnote">
             <h3>TDV Outbound Log — shipment logging</h3>
             <p>
-              Scans and logs outbound shipments against a barcode-indexed catalogue. 1,513
-              lines, 12 commits, Aug 10 – 13 2026. Live at
+              Scans and logs outbound shipments against a barcode-indexed catalogue. 1,730
+              lines, 14 commits, Aug 10 – 19 2026. Live at
               <a href="https://tdv-outbound-log.vercel.app/" rel="noopener noreferrer">tdv-outbound-log.vercel.app</a>.
               Contract estimate $1,900.
             </p>
@@ -288,7 +288,7 @@
           <article class="footnote">
             <h3>Cotizador Farmers Fresh — logistics quoting</h3>
             <p>
-              A second quoting engine, rebuilt from scratch for a different importer. 2,154 lines,
+              A second quoting engine, rebuilt from scratch for a different importer. 2,671 lines, 62 tests,
               24 commits, Aug 11 – 14 2026. Live at
               <a href="https://cotizador-farmers-fresh.vercel.app/" rel="noopener noreferrer">cotizador-farmers-fresh.vercel.app</a>.
             </p>
@@ -297,7 +297,7 @@
             <h3>Currents — consumer PWA</h3>
             <p>
               A swipe-driven learning feed that installs to the home screen and works offline.
-              9,362 lines, 119 commits, Aug 11 – 18 2026. Live at
+              20,960 lines, 300 tests, 182 commits, Aug 11 – 22 2026. Live at
               <a href="https://currents-weld.vercel.app/" rel="noopener noreferrer">currents-weld.vercel.app</a>.
             </p>
           </article>
@@ -441,21 +441,37 @@
       <section class="section shell" id="honesty" tabindex="-1">
         <h2 class="section-title">05 — How these numbers were made</h2>
         <p class="footnote text-muted" id="evidence-note">
-          Measured from git history, the file system and Claude Code session transcripts, all read
-          on 2026-08-18. Line counts use one method across all six builds: authored source only,
-          excluding dependencies, build output, third-party libraries and generated files. Counting
-          another way moves these figures by up to three times, so the method travels with the
-          number. Several systems are still in active development, so these are a snapshot rather
-          than a ceiling — the Rutero test count rose from 749 to 1,186 in the five days before this
-          reading.
+          Measured on 2026-08-22 by <code>npm run measure</code>, which reads the repositories
+          directly. Line counts are physical lines of authored source, taken from
+          <code>git ls-files</code> so that dependencies, build output and untracked scratch are
+          excluded by construction. Test counts are what the test runner reports, because &ldquo;tests
+          passing&rdquo; should mean the tests were run. Several systems are still in active
+          development, so these are a snapshot rather than a ceiling &mdash; Rutero gained 42 tests
+          in the four days before this reading.
         </p>
+        <p class="footnote">
+          These numbers replace an earlier set that could not be reproduced. The first reading was
+          counted by hand, once, and the page claimed it used &ldquo;one method across all six
+          builds&rdquo;. It did not: testing twenty-four candidate rules against the repositories,
+          no single rule reproduced more than one of the six figures. Each had been counted to a
+          different boundary. Two of the differences were large and neither favoured me by accident
+          &mdash; the Rutero count covered only <code>app/</code>, <code>supabase/</code> and
+          <code>server/</code> rather than the whole repository, and the Currents count was less
+          than half of what is there. Both are now higher. Three other things the script found and
+          the hand count had not: a personal notes vault committed inside one repository, a
+          generated 1,911-line runtime file copied into three separate projects, and a page
+          committed twice under two names. All excluded, by rule rather than by memory.
+        </p>
+
         <p class="footnote">
           The check that enforces this is public. The same figures live in four places on this page
           — the data file, the hero, the scriptless fallback and the structured data for crawlers —
           and three of those are never rendered on a normal load, so they drift silently. They did.
           <a href="https://github.com/jgaribay01/juan-garibay-portfolio" rel="noopener noreferrer" target="_blank">Read
           the source and the guard</a>: <code>npm run check</code> fails the build if any copy
-          disagrees with the data file.
+          disagrees with the data file, and <code>npm run measure</code> fails if the data file
+          disagrees with the repositories. The first proves the page is consistent; only the second
+          proves it is true.
         </p>
 
         <p class="footnote">

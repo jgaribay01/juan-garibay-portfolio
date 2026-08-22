@@ -116,6 +116,13 @@ const expectOg = within(ogSource, 'og-source.html (regenerate img/og.png after f
 expectOg('og systems count', `>${systems}<`);
 expectOg('og benefit', usd(presentedBenefit));
 expectOg('og cash', usd(P.BENEFIT.cashAnnual));
+
+// The card's headline test figure is the sum across the systems shown. It used
+// to be one project's count, which quietly became wrong the moment a second
+// project grew a suite.
+const presentedTests = P.PROJECTS.reduce((sum, p) => sum + (p.tests ?? 0), 0);
+expectOg('og tests passing', presentedTests.toLocaleString('en-US'));
+expect('meta description tests', `${presentedTests.toLocaleString('en-US')} tests passing`);
 // The card stamps the measurement date. Derived from MEASURED_ON so a
 // re-measurement cannot leave the preview claiming the old reading date.
 const [ogY, ogM, ogD] = P.MEASURED_ON.split('-');

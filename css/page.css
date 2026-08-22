@@ -173,7 +173,7 @@ html { scroll-behavior: smooth; }
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-4);
-  min-height: 4917px;
+  min-height: 5022px;
 }
 .project {
   position: relative;
@@ -430,20 +430,20 @@ html { scroll-behavior: smooth; }
   .stat-strip { min-height: 351px; }
   .stat-strip--cost { min-height: 333px; }
   .cost-split { min-height: 1038px; }
-  .project-grid { min-height: 4729px; }
+  .project-grid { min-height: 4746px; }
 }
 
 @media (min-width: 560px) {
   .stat-strip { min-height: 333px; }
   .cost-split { min-height: 1017px; }
-  .project-grid { min-height: 4569px; }
+  .project-grid { min-height: 4675px; }
 }
 
 @media (min-width: 700px) {
   .stat-strip,
   .stat-strip--cost { min-height: 223px; }
   .cost-split { min-height: 975px; }
-  .project-grid { min-height: 4436px; }
+  .project-grid { min-height: 4524px; }
 }
 
 @media (min-width: 900px) {
@@ -459,7 +459,7 @@ html { scroll-behavior: smooth; }
 @media (min-width: 1100px) {
   .stat-strip { min-height: 130px; }
   .stat-strip--cost { min-height: 112px; }
-  .project-grid { min-height: 2374px; }
+  .project-grid { min-height: 2426px; }
   .cost-split { min-height: 542px; }
 }
 
@@ -682,14 +682,14 @@ html { scroll-behavior: smooth; }
 #hard { contain-intrinsic-size: auto 5189px; }
 #numbers { contain-intrinsic-size: auto 1807px; }
 #cost { contain-intrinsic-size: auto 1842px; }
-#honesty { contain-intrinsic-size: auto 912px; }
+#honesty { contain-intrinsic-size: auto 1353px; }
 #contact { contain-intrinsic-size: auto 311px; }
 
 @media (min-width: 900px) {
   #hard { contain-intrinsic-size: auto 3163px; }
   #numbers { contain-intrinsic-size: auto 826px; }
   #cost { contain-intrinsic-size: auto 799px; }
-  #honesty { contain-intrinsic-size: auto 574px; }
+  #honesty { contain-intrinsic-size: auto 781px; }
   #contact { contain-intrinsic-size: auto 402px; }
 }
 
