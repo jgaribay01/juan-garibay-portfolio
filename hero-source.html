@@ -1,0 +1,175 @@
+<!doctype html>
+<!-- Source for img/ff-hero.webp and img/currents-hero.webp.
+     Rendered at 900x1124 and cut into two 900x562 cards; never served.
+
+     These two cards state measured figures, and until now those figures were
+     baked into a WebP with no source to rebuild from. One claimed "5,152 Lines
+     · 18 commits" when the repo held 2,671 and 24; the other claimed "95 cards
+     across eight topic streams" against a deck of 727 across 15. `npm run
+     check` cannot read a picture, so nothing caught either.
+
+     The other four hero images are plain screenshots of the apps themselves.
+     They state no portfolio figure, so they have no source here.
+
+     Regenerate with tools/render-heroes.sh. Excluded from deploys via
+     .vercelignore. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        width: 900px;
+        background: #0a0b0d;
+        color: #e8ecf1;
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Each card is exactly the size of the image it becomes, so the crop is
+         a straight cut at y=562 rather than a measurement. */
+      .card {
+        position: relative;
+        width: 900px;
+        height: 562px;
+        overflow: hidden;
+        background: #0a0b0d;
+      }
+
+      /* No grid here, deliberately. The social card carries one; these two do
+         not, and adding it tiled visible squares across the artwork. */
+
+      .glow {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .glow--ff {
+        top: -230px;
+        left: -170px;
+        background: radial-gradient(circle, rgba(74, 222, 128, 0.10) 0%, transparent 66%);
+      }
+      .glow--currents {
+        top: -190px;
+        left: 390px;
+        width: 460px;
+        height: 460px;
+        background: radial-gradient(circle, rgba(118, 108, 235, 0.17) 0%, transparent 64%);
+      }
+
+      .copy {
+        position: absolute;
+        left: 84px;
+        top: 150px;
+        width: 306px;
+        z-index: 2;
+      }
+
+      .kicker {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5px;
+        font-weight: 500;
+        letter-spacing: 0.19em;
+        text-transform: uppercase;
+        color: #4ade80;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 18px;
+      }
+      .kicker::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4ade80;
+        box-shadow: 0 0 0 3.5px rgba(74, 222, 128, 0.15);
+        flex: none;
+      }
+
+      h1 {
+        font-size: 27px;
+        line-height: 1.16;
+        letter-spacing: -0.028em;
+        font-weight: 700;
+        color: #f3f6fa;
+        margin-bottom: 14px;
+      }
+
+      .desc {
+        font-size: 11.5px;
+        line-height: 1.72;
+        color: #8a94a2;
+        margin-bottom: 20px;
+      }
+
+      .specs { list-style: none; }
+      .spec {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5px;
+        line-height: 1.5;
+        color: #7f8996;
+        padding: 5px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.075);
+      }
+      .spec:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.075); }
+      .spec b { color: #e8ecf1; font-weight: 600; }
+
+      /* The device mockups are cropped straight out of the previous images and
+         placed at the coordinates they already occupied, so replacing the text
+         does not move the artwork. */
+      .shot { position: absolute; z-index: 2; }
+      .shot--ff { filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.42)); }
+      .shot--ff { left: 424px; top: 132px; width: 390px; height: 299px; }
+      .shot--currents { left: 513px; top: 50px; width: 214px; height: 461px; }
+    </style>
+  </head>
+  <body>
+    <section class="card" id="card-ff">
+      <div class="glow glow--ff"></div>
+      <div class="copy">
+        <div class="kicker">Live in production</div>
+        <h1>Cotizador<br />Farmers Fresh</h1>
+        <p class="desc">
+          A second quoting engine, rebuilt from scratch for a different importer and its own
+          lanes. Three days from empty folder to production.
+        </p>
+        <ul class="specs">
+          <li class="spec"><b>2,671 lines</b> · 24 commits · 62 tests</li>
+          <li class="spec"><b>Pricing engine</b> with its own design system</li>
+          <li class="spec"><b>Sheets sync</b>, PDF export, migration path</li>
+          <li class="spec"><b>Team auth</b> — internal tool, gated</li>
+        </ul>
+      </div>
+      <img class="shot shot--ff" src="img/ff-shot.webp" alt="" />
+    </section>
+
+    <section class="card" id="card-currents">
+      <div class="glow glow--currents"></div>
+      <div class="copy">
+        <div class="kicker">Consumer PWA · Offline-first</div>
+        <h1>Currents</h1>
+        <p class="desc">
+          A swipe-driven learning feed that installs to the home screen and keeps working with
+          no network. Built in two days.
+        </p>
+        <ul class="specs">
+          <li class="spec"><b>Service worker</b> — full offline reading</li>
+          <li class="spec"><b>Installable</b> — web app manifest, no store</li>
+          <li class="spec"><b>727 cards</b> across 15 topic streams</li>
+          <li class="spec"><b>Content pipeline</b> — generation and quiz tooling</li>
+        </ul>
+      </div>
+      <img class="shot shot--currents" src="img/currents-shot.webp" alt="" />
+    </section>
+  </body>
+</html>

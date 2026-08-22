@@ -402,6 +402,13 @@ const PORTFOLIO = (() => {
       loc: 20960,
       commits: 182,
       tests: 300,
+      /**
+       * A product figure the hero card states, so it is measured like any
+       * other. The card used to claim "95 cards across eight topic streams";
+       * the deck is 727 across 15. Nothing read the card, because the claim
+       * was baked into a WebP.
+       */
+      deck: { cards: 727, topics: 15 },
       verified:
         '182 commits over 11 days, sole author (git shortlog -sne); 300 tests passing (node --test); 22 Aug 2026',
       stack: ['PWA', 'Service Worker', 'Vanilla JS', 'Offline-first'],

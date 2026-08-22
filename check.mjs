@@ -11,7 +11,7 @@
  * Run with `npm run check`. Exits non-zero on the first mismatch.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -161,6 +161,37 @@ expect('meta description tests', `${presentedTests.toLocaleString('en-US')} test
 const [ogY, ogM, ogD] = P.MEASURED_ON.split('-');
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 expectOg('og measured date', `${Number(ogD)} ${MONTHS[Number(ogM) - 1]} ${ogY}`);
+
+// — the two hero cards that state measured figures —
+//
+// These live inside WebP files, which no check can read. The source they are
+// rendered from can be read, so it is what gets verified: if it drifts from
+// js/data.js the card is stale and must be re-rendered with
+// tools/render-heroes.sh. Both cards had already drifted badly — one claimed
+// 5,152 lines against 2,671, the other 95 deck cards against 727.
+const heroSourcePath = join(here, 'hero-source.html');
+if (!existsSync(heroSourcePath)) {
+  failures.push('hero-source.html is missing — the hero cards cannot be regenerated');
+} else {
+  const heroSource = readFileSync(heroSourcePath, 'utf8');
+  const expectHero = within(heroSource, 'hero-source.html (re-render with tools/render-heroes.sh)');
+  const ff = P.PROJECTS.find((p) => p.id === 'cotizador-farmers-fresh');
+  const currents = P.PROJECTS.find((p) => p.id === 'currents');
+  if (ff) {
+    expectHero('ff hero line count', `${ff.loc.toLocaleString('en-US')} lines`);
+    expectHero('ff hero commits', `${ff.commits} commits`);
+    expectHero('ff hero tests', `${ff.tests} tests`);
+  }
+  if (currents?.deck) {
+    expectHero('currents hero deck cards', `${currents.deck.cards.toLocaleString('en-US')} cards`);
+    expectHero('currents hero deck topics', `${currents.deck.topics} topic streams`);
+  }
+  for (const asset of ['img/ff-shot.webp', 'img/currents-shot.webp']) {
+    if (!existsSync(join(here, asset))) {
+      failures.push(`hero asset ${asset} is missing — tools/render-heroes.sh cannot rebuild the cards`);
+    }
+  }
+}
 
 // — every build must be represented in the scriptless fallback, with its
 //   measured figures, not an older round's —

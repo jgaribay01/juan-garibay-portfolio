@@ -153,7 +153,10 @@
     if (project.image) {
       return el('div', { class: 'project-media grayscale' }, [
         el('img', {
-          src: project.image,
+          // img/ is served immutable for a year, so a regenerated screenshot
+          // at the same URL would never reach anyone who had seen the old one.
+          // Derived from MEASURED_ON so a re-measure busts it automatically.
+          src: `${project.image}?v=${MEASURED_ON}`,
           alt: project.imageAlt || `${project.name} screenshot`,
           // Intrinsic size, so the box is reserved before the bytes land.
           width: project.imageSize?.width ?? null,

@@ -270,6 +270,26 @@ const isTestFile = (rel) =>
   // having no tests at all.
   /(^|\/)test-[\w-]+\.(mjs|cjs|[jt]sx?)$/.test(rel);
 
+/**
+ * Product figures a hero card states that are not lines, commits or tests.
+ *
+ * Kept explicit and per-repo rather than generalised: there is exactly one of
+ * them, and a claim on a card is worth measuring precisely because nothing
+ * else can read it.
+ */
+const EXTRA = {
+  currents: (repoPath) => {
+    const deck = join(repoPath, 'content', 'cards.json');
+    if (!existsSync(deck)) return null;
+    let parsed;
+    try { parsed = JSON.parse(readFileSync(deck, 'utf8')); } catch { return null; }
+    const cards = Array.isArray(parsed) ? parsed : (parsed.cards || []);
+    // cards.json and cards.slim.json hold the SAME deck in two shapes. Summing
+    // both double-counts it — read one.
+    return { cards: cards.length, topics: new Set(cards.map((c) => c?.topic).filter(Boolean)).size };
+  },
+};
+
 async function measure(repo) {
   if (!existsSync(repo.path)) return { ...repo, missing: true };
 
@@ -340,6 +360,7 @@ async function measure(repo) {
     machineGenerated,
     duplicates,
     testFiles: testFiles.length,
+    deck: EXTRA[repo.id] ? EXTRA[repo.id](repo.path) : null,
     testCases,
     testCasesStatic,
     suite,
