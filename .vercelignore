@@ -4,6 +4,7 @@ node_modules
 
 og-source.html
 hero-source.html
+graphify-out
 package.json
 check.mjs
 css/fonts/full

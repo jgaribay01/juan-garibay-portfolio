@@ -9,3 +9,6 @@ node_modules/
 img/_*
 # Unsubset originals, kept only while verifying the subset.
 css/fonts/full/
+
+# Knowledge-graph output — build artefact, regenerate with /graphify
+graphify-out/
