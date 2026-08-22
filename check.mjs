@@ -98,6 +98,27 @@ expectStrip('strip payback', `>${presentedPayback}%<`);
 // The excluded system is stated in prose, and prose drifts as easily as a
 // field. If the sum on the page ever changes, the sentence explaining the gap
 // has to change with it.
+// The method sentence is rendered by render.js AND written into the fallback,
+// and the two had drifted: the fallback described the measurement script while
+// the rendered copy still described a hand count. Nobody saw it, because the
+// rendered copy replaces the fallback the moment JavaScript runs.
+const normalise = (t) => t
+  .replace(/<[^>]+>/g, '')
+  .replace(/&rsquo;|&lsquo;|\u2018|\u2019/g, "'")
+  .replace(/&ldquo;|&rdquo;|\u201c|\u201d/g, '"')
+  .replace(/&mdash;|\u2014/g, '-')
+  .replace(/&amp;/g, '&')
+  .replace(/\s+/g, ' ')
+  .trim();
+const evidenceStatic = normalise((html.match(/id="evidence-note"[^>]*>([\s\S]*?)<\/p>/) || ['', ''])[1]);
+for (const sentence of P.EVIDENCE.method.split('. ')) {
+  const needle = normalise(sentence).replace(/\.$/, '');
+  if (!needle) continue;
+  if (!evidenceStatic.includes(needle)) {
+    failures.push(`evidence method: the fallback is missing "${needle.slice(0, 60)}..." — it has drifted from what render.js shows`);
+  }
+}
+
 expect('excluded system total', usd(P.EXCLUDED.annualUsd));
 expect('excluded source total', usd(P.EXCLUDED.sourceTotal));
 expect('excluded presented total', usd(presentedBenefit));
@@ -122,6 +143,18 @@ expectOg('og cash', usd(P.BENEFIT.cashAnnual));
 // project grew a suite.
 const presentedTests = P.PROJECTS.reduce((sum, p) => sum + (p.tests ?? 0), 0);
 expectOg('og tests passing', presentedTests.toLocaleString('en-US'));
+
+// img/ is served immutable for a year, so the social card's URL has to change
+// when the card does — otherwise a scraper keeps serving the previous reading's
+// figures indefinitely. Tying the query to MEASURED_ON means a re-measure busts
+// it automatically instead of relying on someone remembering.
+for (const tag of ['og:image', 'twitter:image']) {
+  const found = html.match(new RegExp(`(?:property|name)="${tag}" content="([^"]+)"`));
+  if (!found) { failures.push(`${tag}: not found in index.html`); continue; }
+  if (!found[1].includes(`?v=${P.MEASURED_ON}`)) {
+    failures.push(`${tag}: ${JSON.stringify(found[1])} is not versioned with ?v=${P.MEASURED_ON}, so the cached card will outlive this measurement`);
+  }
+}
 expect('meta description tests', `${presentedTests.toLocaleString('en-US')} tests passing`);
 // The card stamps the measurement date. Derived from MEASURED_ON so a
 // re-measurement cannot leave the preview claiming the old reading date.

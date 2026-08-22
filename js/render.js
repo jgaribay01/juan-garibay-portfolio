@@ -327,9 +327,9 @@
       `replacement figure: ${BENEFIT.source}.`;
 
     mount('evidence-note').textContent =
-      `Project metrics come from git history and the file system. Cost and usage come from ` +
-      `${COST.sessions} Claude Code session transcripts (${COST.from} to ${COST.to}), both read on ` +
-      `${MEASURED_ON}. ${EVIDENCE.caveat}`;
+      `Project metrics are re-derived from the repositories by \`npm run measure\`, last run on ` +
+      `${MEASURED_ON}. ${EVIDENCE.method} Cost and usage come from ${COST.sessions} Claude Code ` +
+      `session transcripts (${COST.from} to ${COST.to}), read the same day. ${EVIDENCE.caveat}`;
 
     mount('tools-i-run').replaceChildren(
       ...TOOLS_I_RUN.map((tool) =>

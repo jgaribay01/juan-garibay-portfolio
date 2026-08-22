@@ -22,7 +22,7 @@
     />
     <!-- Card regenerated from og-source.html whenever the headline figures move,
          so the preview can never drift from the page it advertises. -->
-    <meta property="og:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png" />
+    <meta property="og:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png?v=2026-08-22" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
@@ -35,7 +35,7 @@
       name="twitter:description"
       content="Five systems running a real distribution business, with the evidence behind each one."
     />
-    <meta name="twitter:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png" />
+    <meta name="twitter:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png?v=2026-08-22" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
@@ -441,13 +441,14 @@
       <section class="section shell" id="honesty" tabindex="-1">
         <h2 class="section-title">05 — How these numbers were made</h2>
         <p class="footnote text-muted" id="evidence-note">
-          Measured on 2026-08-22 by <code>npm run measure</code>, which reads the repositories
-          directly. Line counts are physical lines of authored source, taken from
-          <code>git ls-files</code> so that dependencies, build output and untracked scratch are
-          excluded by construction. Test counts are what the test runner reports, because &ldquo;tests
-          passing&rdquo; should mean the tests were run. Several systems are still in active
-          development, so these are a snapshot rather than a ceiling &mdash; Rutero gained 42 tests
-          in the four days before this reading.
+          Project metrics are re-derived from the repositories by <code>npm run measure</code>,
+          last run on 2026-08-22. Line counts are physical lines of authored source, taken from
+          git ls-files so that dependencies, build output and untracked scratch are excluded by
+          construction. Test counts are what each project&rsquo;s own test runner reports, because
+          tests passing should mean the tests were run. Cost and usage come from 551 Claude Code
+          session transcripts (2026-07-02 to 2026-08-07), read the same day. Claude Code prunes old
+          transcripts, so this window is a floor, not a lifetime total. Project timelines come from
+          git history, which reaches further back.
         </p>
         <p class="footnote">
           These numbers replace an earlier set that could not be reproduced. The first reading was

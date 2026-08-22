@@ -67,9 +67,14 @@ const PORTFOLIO = (() => {
     freedHoursAnnual: 18506,
     source: 'FUENTE_DE_VERDAD.md §3, 13 August 2026',
     caveat:
-      'Freed hours are not cash until they are redeployed. Several inputs (miles per route, ' +
-      'driving hours, cost per mile) are rated low confidence with measurement dates of 21 and ' +
-      '28 August; OIS and quoting volumes are measured 11 September.',
+      'Freed hours are not cash until they are redeployed, and the two largest levers here — ' +
+      'driving hours ($11,000) and fuel ($7,500) — rest on inputs rated low confidence that ' +
+      'were due to be measured on 21 August. That measurement was attempted on 22 August and ' +
+      'could not be made: the route system holds 18 visits across 6 days in production, with ' +
+      'no route drafts at all, which is not a base to derive miles per route or driving hours ' +
+      'from. Those three inputs moved to 11 September, the date the source document already ' +
+      'used — not because there is reason to expect the base will be there by then. Cost per ' +
+      'mile and the supervision rates are measured 28 August.',
   };
 
   /**
@@ -167,6 +172,22 @@ const PORTFOLIO = (() => {
    * never drift apart.
    */
   const EVIDENCE = {
+    /**
+     * How the engineering figures were produced.
+     *
+     * This lives here because it is stated twice — once by render.js and once
+     * as the scriptless fallback in index.html — and those two had already
+     * drifted apart: the fallback described the measurement script while the
+     * rendered text still described a hand count. Nothing caught it, because
+     * the guard compared the page to the data file and this sentence was in
+     * neither. Now it is in the data file, and the guard compares both copies
+     * against it.
+     */
+    method:
+      'Line counts are physical lines of authored source, taken from git ls-files so that ' +
+      'dependencies, build output and untracked scratch are excluded by construction. Test ' +
+      'counts are what each project\'s own test runner reports, because tests passing should ' +
+      'mean the tests were run.',
     caveat:
       'Claude Code prunes old transcripts, so this window is a floor, not a lifetime total. ' +
       'Project timelines come from git history, which reaches further back.',

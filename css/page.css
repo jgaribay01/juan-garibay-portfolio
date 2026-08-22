@@ -680,16 +680,16 @@ html { scroll-behavior: smooth; }
    left #honesty 165px short — an estimate that is wrong is worse than none,
    because the page jumps when the section is finally rendered. */
 #hard { contain-intrinsic-size: auto 5189px; }
-#numbers { contain-intrinsic-size: auto 1807px; }
+#numbers { contain-intrinsic-size: auto 1977px; }
 #cost { contain-intrinsic-size: auto 1842px; }
-#honesty { contain-intrinsic-size: auto 1353px; }
+#honesty { contain-intrinsic-size: auto 1459px; }
 #contact { contain-intrinsic-size: auto 311px; }
 
 @media (min-width: 900px) {
   #hard { contain-intrinsic-size: auto 3163px; }
-  #numbers { contain-intrinsic-size: auto 826px; }
+  #numbers { contain-intrinsic-size: auto 911px; }
   #cost { contain-intrinsic-size: auto 799px; }
-  #honesty { contain-intrinsic-size: auto 781px; }
+  #honesty { contain-intrinsic-size: auto 845px; }
   #contact { contain-intrinsic-size: auto 402px; }
 }
 
