@@ -102,6 +102,31 @@ with measurement dates still ahead of them. Those are marked as such on the page
 data, and they are estimates until the dates pass. The engineering figures — line counts, commits,
 tests, contrast, layout shift — are measured, reproducible, and dated.
 
+## Adding a demo recording
+
+`tools/encode-demo.sh` turns a raw screen recording into the three files a
+project card needs — H.264, VP9 and a poster frame:
+
+```bash
+tools/encode-demo.sh ~/Desktop/rutero.mov rutero 1.5 12
+#                    recording            name   trim  poster-at (seconds)
+```
+
+Then add the `demo` block it prints to that project in `js/data.js`. The card
+renders a video instead of a screenshot, `preload="none"`, so it costs nothing
+until someone presses play.
+
+**Before recording anything, check what is on screen.** These pages are public.
+A recording of an internal tool will show whatever data is loaded at the time —
+customer names, addresses, prices, margins. Record against seeded or demonstration
+data, or blur before encoding. This is why the only demo currently on the site is
+Currents, which holds no business data at all: the route planner sits behind a
+login and shows the customer master, and the Farmers Fresh quoting tool still has
+its access control disabled.
+
+Keep it short — 20 to 35 seconds. Audio is stripped automatically; the card plays
+muted.
+
 ## Licence
 
 No licence granted. The code is published to be read, not reused.
