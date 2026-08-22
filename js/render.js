@@ -89,6 +89,11 @@
   // to the total: the $830 cost of carrying receivables is neither.
   totals.freedHours = BENEFIT.freedHoursAnnual;
   totals.otherBenefit = totals.annualBenefit - totals.cashBenefit - totals.freedHours;
+
+  // Derived, not typed. The source document's 102% counts a system this page
+  // does not show, and a hand-copied percentage is how every other figure here
+  // went stale.
+  totals.paybackPercent = Math.round((totals.annualBenefit / REPLACEMENT.juanYear1) * 100);
   totals.netPerMonth = totals.monthlyBenefit - SPEND.actualUsd;
   totals.multiple = totals.monthlyBenefit / SPEND.actualUsd;
   totals.paybackDays = (SPEND.actualUsd / totals.monthlyBenefit) * 30;
@@ -99,7 +104,7 @@
     mount('hero-title').textContent =
       `${totals.projects} systems running a distribution business. ` +
       `${usd(totals.annualBenefit)} a year returned. They pay ` +
-      `${REPLACEMENT.payingPercentOfSalary}% of the salary that built them.`;
+      `${totals.paybackPercent}% of the salary that built them.`;
 
     const stats = [
       { value: String(totals.projects), label: 'Systems in the business' },
@@ -107,7 +112,7 @@
       { value: usd(totals.cashBenefit), label: 'Of that, cash' },
       { value: usd(REPLACEMENT.agencyYear1), label: 'Agency quote to replace, year 1' },
       {
-        value: `${REPLACEMENT.payingPercentOfSalary}%`,
+        value: `${totals.paybackPercent}%`,
         label: 'Of salary, paid back yearly',
         accent: true,
       },

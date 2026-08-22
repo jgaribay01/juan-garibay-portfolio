@@ -26,6 +26,13 @@ const P = (0, eval)(`${dataSource}\nPORTFOLIO;`);
 
 const html = read('index.html');
 
+// og-source.html renders img/og.png, the card every link preview shows. Nothing
+// on the site displays it, no one reloads it, and it is a screenshot — so it is
+// the single most drift-prone surface here, and it drifted: it kept saying six
+// systems and $30,748 after the page said five and $28,162. Regenerate the PNG
+// after any change this catches, or the preview keeps showing the old figures.
+const ogSource = read('og-source.html');
+
 // The point of this guard is the scriptless fallback — the copy nothing renders
 // on a normal load, which is exactly why it drifted unnoticed before. Searching
 // the whole document defeats that: a stale figure inside <noscript> hides behind
@@ -40,6 +47,13 @@ if (!fallback) {
 const usd = (n) => `$${n.toLocaleString('en-US')}`;
 const systems = P.PROJECTS.filter((p) => !p.personal).length;
 
+// Summed from the cards, exactly as render.js does it. The source document's
+// $30,748 and 102% count a sixth system this page excludes, so asserting the
+// hero against the source figures would have let the headline claim a benefit
+// no card on the page backs up.
+const presentedBenefit = P.PROJECTS.reduce((sum, p) => sum + (p.benefit?.annualUsd ?? 0), 0);
+const presentedPayback = Math.round((presentedBenefit / P.REPLACEMENT.juanYear1) * 100);
+
 const failures = [];
 
 /** The figure must appear in index.html, or the fallback has drifted. */
@@ -51,12 +65,62 @@ const within = (haystack, where) => (label, needle) => {
 const expect = within(html, 'index.html');
 const expectFallback = within(fallback, 'the <noscript> fallback');
 
+// The hero repeats figures that now also appear in the prose explaining which
+// system is excluded. Searching the whole document let a stale hero hide behind
+// the correct figure in that paragraph — the same way a stale noscript figure
+// once hid behind the hero. Scope narrowly or the guard proves nothing.
+// Split further, because the hero states every figure TWICE — once in the
+// headline sentence and once in the stat strip. Searching the hero as one blob
+// passes when only one of the two copies is right, which is the drift most
+// likely to happen: someone updates the sentence and forgets the tiles.
+const region = (pattern, name) => {
+  const found = (html.match(pattern) || [''])[0];
+  if (!found) {
+    console.error(`check: index.html has no ${name} to verify`);
+    process.exit(1);
+  }
+  return within(found, name);
+};
+const expectHeadline = region(/<h1 class="hero-title"[\s\S]*?<\/h1>/, 'the hero headline');
+const expectStrip = region(/<div class="stat-strip"[\s\S]*?<\/div>\s*<\/section>/, 'the stat strip');
+
 // — hero, which exists in the markup purely to stop layout shift —
-expect('hero systems count', `${systems} systems running a distribution business`);
-expect('hero benefit', usd(P.BENEFIT.baseAnnual));
-expect('hero cash', usd(P.BENEFIT.cashAnnual));
-expect('hero agency quote', usd(P.REPLACEMENT.agencyYear1));
-expect('hero payback', `${P.REPLACEMENT.payingPercentOfSalary}%`);
+expectHeadline('headline systems count', `${systems} systems running a distribution business`);
+expectHeadline('headline benefit', usd(presentedBenefit));
+expectHeadline('headline payback', `${presentedPayback}%`);
+
+expectStrip('strip systems count', `>${systems}<`);
+expectStrip('strip benefit', usd(presentedBenefit));
+expectStrip('strip cash', usd(P.BENEFIT.cashAnnual));
+expectStrip('strip agency quote', usd(P.REPLACEMENT.agencyYear1));
+expectStrip('strip payback', `>${presentedPayback}%<`);
+
+// The excluded system is stated in prose, and prose drifts as easily as a
+// field. If the sum on the page ever changes, the sentence explaining the gap
+// has to change with it.
+expect('excluded system total', usd(P.EXCLUDED.annualUsd));
+expect('excluded source total', usd(P.EXCLUDED.sourceTotal));
+expect('excluded presented total', usd(presentedBenefit));
+if (presentedBenefit + P.EXCLUDED.annualUsd !== P.EXCLUDED.sourceTotal) {
+  failures.push(
+    `excluded arithmetic: ${usd(presentedBenefit)} shown + ${usd(P.EXCLUDED.annualUsd)} excluded ` +
+    `does not reach the source total of ${usd(P.EXCLUDED.sourceTotal)}`,
+  );
+}
+if (P.PROJECTS.some((p) => p.name === P.EXCLUDED.name)) {
+  failures.push(`excluded system "${P.EXCLUDED.name}" is still in PROJECTS`);
+}
+
+// — the social card, whose figures live only inside an image —
+const expectOg = within(ogSource, 'og-source.html (regenerate img/og.png after fixing)');
+expectOg('og systems count', `>${systems}<`);
+expectOg('og benefit', usd(presentedBenefit));
+expectOg('og cash', usd(P.BENEFIT.cashAnnual));
+// The card stamps the measurement date. Derived from MEASURED_ON so a
+// re-measurement cannot leave the preview claiming the old reading date.
+const [ogY, ogM, ogD] = P.MEASURED_ON.split('-');
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+expectOg('og measured date', `${Number(ogD)} ${MONTHS[Number(ogM) - 1]} ${ogY}`);
 
 // — every build must be represented in the scriptless fallback, with its
 //   measured figures, not an older round's —

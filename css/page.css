@@ -173,7 +173,7 @@ html { scroll-behavior: smooth; }
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-4);
-  min-height: 6091px;
+  min-height: 4917px;
 }
 .project {
   position: relative;
@@ -287,7 +287,7 @@ html { scroll-behavior: smooth; }
   grid-template-columns: 1fr;
   gap: var(--space-8);
   align-items: start;
-  min-height: 1247px;
+  min-height: 1142px;
 }
 .cost-heading {
   font-family: var(--font-mono);
@@ -430,20 +430,20 @@ html { scroll-behavior: smooth; }
   .stat-strip { min-height: 351px; }
   .stat-strip--cost { min-height: 333px; }
   .cost-split { min-height: 1038px; }
-  .project-grid { min-height: 5491px; }
+  .project-grid { min-height: 4729px; }
 }
 
 @media (min-width: 560px) {
   .stat-strip { min-height: 333px; }
   .cost-split { min-height: 1017px; }
-  .project-grid { min-height: 5331px; }
+  .project-grid { min-height: 4569px; }
 }
 
 @media (min-width: 700px) {
   .stat-strip,
   .stat-strip--cost { min-height: 223px; }
   .cost-split { min-height: 975px; }
-  .project-grid { min-height: 5158px; }
+  .project-grid { min-height: 4436px; }
 }
 
 @media (min-width: 900px) {
@@ -451,7 +451,7 @@ html { scroll-behavior: smooth; }
   .stat-strip { min-height: 240px; }
   .project-grid {
     grid-template-columns: repeat(2, 1fr);
-    min-height: 3243px;
+    min-height: 2477px;
   }
   .cost-split { grid-template-columns: 1.1fr 1fr; min-height: 604px; }
 }
@@ -459,7 +459,7 @@ html { scroll-behavior: smooth; }
 @media (min-width: 1100px) {
   .stat-strip { min-height: 130px; }
   .stat-strip--cost { min-height: 112px; }
-  .project-grid { min-height: 3139px; }
+  .project-grid { min-height: 2374px; }
   .cost-split { min-height: 542px; }
 }
 
@@ -657,6 +657,12 @@ html { scroll-behavior: smooth; }
    above-the-fold content forces the browser to evaluate containment before
    first paint, which costs more than it saves.
 
+   Measured in a real browser with the reserves neutralised, at the NARROWEST
+   width in each range, because that is where content is tallest: 375px for the
+   base rules and 1440px for the >=900 block. Measuring wider under-reserves and
+   the section grows as it scrolls into view. Re-measure the same way or the
+   numbers are not comparable.
+
    The paired `contain-intrinsic-size` is mandatory — without it an off-screen
    section collapses to zero height and the scrollbar jumps as you scroll. The
    values are measured, and the `auto` keyword lets the browser replace them
@@ -673,17 +679,17 @@ html { scroll-behavior: smooth; }
    pass used heights taken before the source-link paragraph was added, which
    left #honesty 165px short — an estimate that is wrong is worse than none,
    because the page jumps when the section is finally rendered. */
-#hard { contain-intrinsic-size: auto 4996px; }
-#numbers { contain-intrinsic-size: auto 2082px; }
-#cost { contain-intrinsic-size: auto 1821px; }
-#honesty { contain-intrinsic-size: auto 663px; }
+#hard { contain-intrinsic-size: auto 5189px; }
+#numbers { contain-intrinsic-size: auto 1807px; }
+#cost { contain-intrinsic-size: auto 1842px; }
+#honesty { contain-intrinsic-size: auto 912px; }
 #contact { contain-intrinsic-size: auto 311px; }
 
 @media (min-width: 900px) {
   #hard { contain-intrinsic-size: auto 3163px; }
-  #numbers { contain-intrinsic-size: auto 914px; }
-  #cost { contain-intrinsic-size: auto 800px; }
-  #honesty { contain-intrinsic-size: auto 452px; }
+  #numbers { contain-intrinsic-size: auto 826px; }
+  #cost { contain-intrinsic-size: auto 799px; }
+  #honesty { contain-intrinsic-size: auto 574px; }
   #contact { contain-intrinsic-size: auto 402px; }
 }
 

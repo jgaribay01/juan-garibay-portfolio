@@ -49,7 +49,8 @@ const PORTFOLIO = (() => {
 
   /**
    * Recurring benefit, taken lever by lever from FUENTE_DE_VERDAD.md section 3.
-   * The base case totals $30,748/year. Two things this model does that a simple
+   * The base case totals $30,748/year ACROSS SIX SYSTEMS — one more than this
+   * page presents; see EXCLUDED below. Two things this model does that a simple
    * hours-saved figure does not:
    *
    *  - It separates CASH ($11,412 — fuel and avoided shelf licences) from FREED
@@ -71,6 +72,27 @@ const PORTFOLIO = (() => {
       '28 August; OIS and quoting volumes are measured 11 September.',
   };
 
+  /**
+   * What this page does NOT show.
+   *
+   * FUENTE_DE_VERDAD.md §3 puts the base case at $30,748 across six systems.
+   * This page presents five. The sixth — the OIS connectors and canonical data
+   * model — was never finished: the creation flow into the warehouse system
+   * stops short, and it is used by two people. Showing a half-built system in
+   * order to claim its $2,586 would be the exact move the rest of this page
+   * argues against, so both come off together.
+   *
+   * Every total here is summed from the systems actually shown, and nothing on
+   * this page retypes the source total — so the two cannot silently diverge.
+   */
+  const EXCLUDED = {
+    name: 'Data layer & OIS connectors',
+    annualUsd: 2586,
+    sourceTotal: 30748,
+    sourceSystems: 6,
+    reason: 'unfinished, and used by two people',
+  };
+
   /** What replacing this capability would cost, per FUENTE_DE_VERDAD.md §5. */
   const REPLACEMENT = {
     juanYear1: 30000, juanYear3: 90000,
@@ -78,7 +100,11 @@ const PORTFOLIO = (() => {
     employeeYear1: 180550, employeeYear3: 491050,
     agencyMaintenanceAnnual: 63000,
     rampMonths: '13 to 15',
-    payingPercentOfSalary: 102,
+    // The share of salary these systems pay back is DERIVED from the systems on
+    // this page (see render.js), never typed here. FUENTE §5 states 102%, but
+    // that counts the sixth system this page excludes — retyping it would have
+    // left the headline claiming a return the page no longer shows. That is the
+    // same duplicated-figure failure as every other bug the guard has caught.
   };
 
   /** One-off costs already avoided, per §4. Market value, NOT cash saved. */
@@ -159,7 +185,7 @@ const PORTFOLIO = (() => {
       loc: 63036,
       commits: 267,
       tests: 1186,
-      verified: '267 commits over 21 days, sole author (git shortlog), 18 Aug 2026',
+      verified: '267 commits over 21 days, one author by email (git shortlog -sne), 18 Aug 2026',
       stack: ['TypeScript', 'React', 'Vite', 'Node', 'Supabase', 'Docker', 'Mapbox', 'Vercel'],
       estimatedBuildHours: 480,
       estimateBasis:
@@ -369,39 +395,6 @@ const PORTFOLIO = (() => {
         'Currents running on a phone: a full-screen learning card from the feed, with the topic ' +
         'tabs, card counter and swipe affordance visible.',
     },
-    {
-      id: 'ois-data-layer',
-      name: 'Data layer & OIS connectors',
-      cat: 'Data infrastructure',
-      desc: 'The connectors and canonical data model the other systems depend on. Partly built.',
-      status: 'Partly built',
-      url: null,
-      period: { from: '2026-07-09', to: '2026-08-13' },
-      activeDays: 6,
-      loc: 1471,
-      commits: null,
-      tests: null,
-      verified: 'Authored on this machine, no version control; system #6 in FUENTE_DE_VERDAD.md',
-      stack: ['Node', 'Playwright', 'n8n', 'Chrome MV3', 'Python', 'SQLite'],
-      estimatedBuildHours: 72,
-      estimateBasis:
-        'Browser automation against the warehouse product form, a Sheets-to-OIS connector, and ' +
-        'the machine-wide file index behind the canonical data model.',
-      before: 'Every product keyed into the warehouse system by hand',
-      after: 'Form filled from the workflow — a human still clicks Save',
-      benefit: {
-        annualUsd: 2586,
-        cashUsd: 0,
-        levers: [
-          { name: 'Monthly sales close', annualUsd: 1008, kind: 'hours' },
-          { name: 'Cost of carrying receivables', annualUsd: 830, kind: 'hours' },
-          { name: 'OIS recapture and product creation', annualUsd: 748, kind: 'hours' },
-        ],
-        was: 'manual keying and month-end reconciliation',
-        now: 'connectors, with the flow still to be completed',
-      },
-      openRisk: 'Declared "a medias" in FUENTE_DE_VERDAD — the full OIS creation flow is unfinished.',
-    },
   ];
 
   /** Cloned to run and learn from, not authored. Listed for honesty. */
@@ -583,6 +576,7 @@ const PORTFOLIO = (() => {
     HOURLY_RATE,
     RATES: Object.freeze(RATES),
     BENEFIT: Object.freeze(BENEFIT),
+    EXCLUDED: Object.freeze(EXCLUDED),
     REPLACEMENT: Object.freeze(REPLACEMENT),
     AVOIDED: Object.freeze(AVOIDED),
     SPEND: Object.freeze(SPEND),
