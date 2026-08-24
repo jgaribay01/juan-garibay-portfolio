@@ -159,7 +159,14 @@
   font-size: var(--sc-t-lg); letter-spacing: var(--sc-track-snug);
   color: var(--sc-ink);
 }
-.map__legs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; }
+/* min-height:0 is what lets this shrink. Without it the leg list refuses to
+   compress and pushes the running total and the CTA off the bottom of a short
+   window entirely. */
+.map__legs {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 1px;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+}
 .map__legs li { display: block; }
 .map__leg {
   display: grid; grid-template-columns: 14px 1fr; align-items: center; gap: var(--sc-3);
@@ -369,6 +376,18 @@
 /* Centred monospace is hard to read at length. */
 .fine--method { max-width: 62ch; margin-inline: auto; line-height: 1.6; text-align: left; }
 
+/* Shown only when the evidence file fails to load. Everything the page states
+   comes from that one file, so the honest failure is to say so. */
+.failed {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid; align-content: center; justify-items: start;
+  gap: var(--sc-4); padding: var(--sc-7) var(--sc-gutter);
+  background: var(--sc-canvas); color: var(--sc-ink);
+}
+.failed h2 { font-family: var(--sc-font-display); font-size: var(--sc-t-2xl); margin: 0; }
+.failed p { max-width: 52ch; color: var(--sc-ink-soft); margin: 0; line-height: 1.6; }
+.failed a { color: var(--sc-accent); text-underline-offset: 3px; }
+
 .noscript { max-width: 40rem; margin: 12vh auto; padding: 0 var(--sc-5); color: var(--sc-ink); }
 .noscript a { color: var(--sc-accent); }
 
@@ -387,8 +406,10 @@
      Each tick keeps a 44px target and carries its name for a screen reader. */
   .map { flex-wrap: wrap; row-gap: var(--sc-2); padding: var(--sc-2) var(--sc-4) var(--sc-3); }
   .map__mark { display: none; }
-  .map__legs { flex: 1 0 100%; flex-direction: row; gap: 3px; }
-  .map__legs li { flex: 1 1 0; }
+  /* Ten waypoints across 390px is 36px each before gaps, under the 44px floor.
+     The strip scrolls rather than shrinking the targets. */
+  .map__legs { flex: 1 0 100%; flex-direction: row; gap: 3px; overflow-x: auto; overflow-y: hidden; }
+  .map__legs li { flex: 1 0 44px; }
   .map__leg {
     grid-template-columns: 1fr; gap: 0; padding: 0;
     min-height: 44px; border: 0; align-content: center;
@@ -408,7 +429,11 @@
   .map__cta { padding: var(--sc-2) var(--sc-4); font-size: 0.68rem; }
 
   .sc-copy--lead.plate { left: var(--sc-gutter); }
+  /* .sc-copy--center positions with left:50% plus translate(-50%). Setting
+     inset-inline here overrides the left but NOT the translate, so a centred
+     plate was pulled half its own width off the left edge of the phone. */
   .plate, .plate--ledger, .plate--end { max-width: none; inset-inline: var(--sc-4); }
+  .sc-copy--center.plate { left: var(--sc-4); right: var(--sc-4); translate: 0 -50%; }
   .plate--ledger { left: var(--sc-4); right: var(--sc-4); }
   .sc-copy--lead.plate, .sc-copy--trail.plate { bottom: clamp(7.5rem, 20vh, 11rem); }
   .sc-copy--trail.plate { text-align: left; border-right: 0; border-left: 1px solid var(--rule-hot); }
@@ -420,6 +445,27 @@
   .plate--ledger { top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); }
   .excluded, .caveat { font-size: 0.68rem; line-height: 1.5; }
   .plate--end { padding: var(--sc-6) var(--sc-4); }
+}
+
+/* Short windows, and the same thing a desktop user gets at 200% zoom. A copy
+   plate is anchored to the bottom, so when it grows taller than the viewport it
+   loses its head first: the project name and the top of the readout. Step the
+   type down and drop the two supplementary lines rather than clipping the
+   heading. */
+@media (min-width: 901px) and (max-height: 800px) {
+  .plate { padding: var(--sc-4); }
+  .plate h2 { font-size: var(--sc-t-xl); }
+  .plate .sc-body { font-size: var(--sc-t-sm); margin-bottom: var(--sc-3); }
+  .sc-copy--lead.plate, .sc-copy--trail.plate { bottom: clamp(1.5rem, 5vh, 3rem); }
+  .audit__total-value { font-size: var(--sc-t-lg); }
+}
+@media (min-width: 901px) and (max-height: 680px) {
+  .hard, .shift { display: none; }
+  .audit__row { padding: 1px 0; }
+}
+@media (max-width: 900px) and (max-height: 680px) {
+  .hard, .shift { display: none; }
+  .plate h2 { font-size: var(--sc-t-lg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

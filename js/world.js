@@ -96,6 +96,43 @@ function auditRows(repo, keep = 7) {
 
 /* ---------------------------------------------------------------- the map */
 
+/**
+ * Where a waypoint should actually put you.
+ *
+ * A fixed fraction of the leg is not good enough: `hero` and `finale` declare
+ * their windows differently from the numeric ones, and landing at 0.45 of the
+ * last leg put the reader before the finale had begun to fade in, on a blank
+ * screen. This mirrors the engine's own window parsing and returns the middle
+ * of the block's full-opacity plateau, in track fractions.
+ */
+function landingFor(legIndex) {
+  const leg = LEGS[legIndex];
+  const block = [...document.querySelectorAll('[data-sc-copy]')].find((el) => {
+    const mid = plateau(el);
+    return mid !== null && mid * total >= leg.c0 && mid * total < leg.c1;
+  });
+  if (block) return plateau(block);
+  return (leg.c0 + leg.w * 0.45) / total;
+}
+
+function plateau(el) {
+  const spec = (el.getAttribute('data-sc-window') || '').trim();
+  const first = LEGS[0], last = LEGS[LEGS.length - 1];
+  let from, to, rIn, rOut;
+  if (spec === 'hero') { from = 0; to = (0.62 * first.w) / total; rIn = 0; rOut = 0.65; }
+  else if (spec === 'finale') { from = (last.c0 + 0.4 * last.w) / total; to = 1; rIn = 0.55; rOut = 0; }
+  else {
+    const n = spec.split(/\s+/).map(parseFloat);
+    if (isNaN(n[0])) return null;
+    from = n[0];
+    to = !isNaN(n[1]) ? n[1] : from + 0.18;
+    rIn = !isNaN(n[2]) ? n[2] : 0.3;
+    rOut = !isNaN(n[3]) ? n[3] : 0.3;
+  }
+  const w = Math.max(to - from, 0.001);
+  return (from + w * rIn + (to - w * rOut)) / 2;
+}
+
 function buildMap() {
   const ol = document.getElementById('map-legs');
   ol.innerHTML = '';
@@ -113,7 +150,10 @@ function buildMap() {
     label.textContent = leg.label;
     b.append(label);
     b.addEventListener('click', () => {
-      scrollTo({ top: trackTop() + leg.c0 * innerHeight + 4, behavior: reduce ? 'auto' : 'smooth' });
+      // Not leg.c0. The boundary is exactly where the copy for that leg has not
+      // faded in yet, so every waypoint but the first used to land the reader on
+      // an empty corridor.
+      scrollTo({ top: trackTop() + landingFor(i) * total * innerHeight, behavior: reduce ? 'auto' : 'smooth' });
     });
     li.append(b);
     ol.append(li);
@@ -197,7 +237,7 @@ function buildBays() {
 
     el.style.transform = `translate3d(${side * PANEL_X}px, ${side > 0 ? -40 : 60}px, ${-z}px)`;
     cam.append(el);
-    bayEls.push({ el, z });
+    bayEls.push({ el, z, panel: true });
   });
 
   // Struts down the whole corridor. They are what makes the travel legible:
@@ -333,11 +373,17 @@ void main() {
 let gl = null, prog = null, U = {};
 
 function initGL() {
+  // Every failure path must clear `gl`, not just return false. The frame loop
+  // guards on `if (gl)`, so a context left assigned after a failed init means
+  // uniforms are written to null locations and drawArrays runs against a canvas
+  // that has already been removed from the document.
+  const fail = () => { gl = null; return false; };
+
   gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
-  if (!gl) return false;
+  if (!gl) return fail();
   // fwidth lives in an extension on WebGL 1. Without it the grid aliases badly,
   // so fall back rather than draw a shimmering mess.
-  if (!gl.getExtension('OES_standard_derivatives')) return false;
+  if (!gl.getExtension('OES_standard_derivatives')) return fail();
 
   const compile = (type, src) => {
     const s = gl.createShader(type);
@@ -351,11 +397,11 @@ function initGL() {
   };
   const vs = compile(gl.VERTEX_SHADER, VERT);
   const fs = compile(gl.FRAGMENT_SHADER, FRAG);
-  if (!vs || !fs) return false;
+  if (!vs || !fs) return fail();
 
   prog = gl.createProgram();
   gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.error('[pitwall] link', gl.getProgramInfoLog(prog)); return false; }
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.error('[pitwall] link', gl.getProgramInfoLog(prog)); return fail(); }
   gl.useProgram(prog);
 
   const buf = gl.createBuffer();
@@ -420,12 +466,23 @@ function buildAudit(host, repoId) {
 
   const totalEl = document.createElement('div');
   totalEl.className = 'audit__total';
-  totalEl.innerHTML = `<span class="audit__total-label">Total</span><span class="audit__total-value">0</span>`;
+  // The visible value counts up with the scroll. Assistive technology reads the
+  // document linearly and would have got "Total 0" for every system the reader
+  // had not yet flown past, so the settled figure is always present as text and
+  // the animated one is hidden from the accessibility tree.
+  totalEl.innerHTML =
+    `<span class="audit__total-label">Total</span>` +
+    `<span class="audit__total-value" aria-hidden="true">0</span>` +
+    `<span class="sr-only">${fmt(repo.linesTotal)} lines</span>`;
 
   const meta = document.createElement('p');
   meta.className = 'audit__meta';
+  meta.setAttribute('aria-hidden', 'true');
+  const metaStatic = document.createElement('p');
+  metaStatic.className = 'sr-only';
+  metaStatic.innerHTML = metaText(repo, sys).replace(/<\/span>/g, '. </span>');
 
-  host.append(head, body, totalEl, meta);
+  host.append(head, body, totalEl, meta, metaStatic);
 
   const a = {
     repo, rows, rowEls, sys,
@@ -460,7 +517,11 @@ function metaText(repo, sys) {
 
 /** Drive one audit from its leg's local progress. */
 function runAudit(a, p) {
-  const fill = Math.max(0, Math.min(1, (p - 0.08) / 0.54));
+  // Under reduced motion the stylesheet shows every row at once, so counting
+  // only the "revealed" ones printed a total that did not match the rows
+  // directly above it. On a page whose subject is arithmetic, that is the worst
+  // possible contradiction to ship.
+  const fill = reduce ? (p > 0 ? 1 : 0) : Math.max(0, Math.min(1, (p - 0.08) / 0.54));
   const want = Math.round(fill * a.rows.length);
   if (want !== a.shown) {
     let sum = 0;
@@ -499,7 +560,7 @@ function buildLedger() {
       : 'no suite';
     const money = r.sys.money ? usd(r.sys.money.annualUsd) : 'personal';
     tr.innerHTML =
-      `<td>${r.sys.name}</td><td>${fmt(r.repo.linesTotal)}</td><td>${fmt(r.repo.commits)}</td>` +
+      `<th scope="row">${r.sys.name}</th><td>${fmt(r.repo.linesTotal)}</td><td>${fmt(r.repo.commits)}</td>` +
       `<td class="${r.repo.suite ? '' : 'dim'}">${tests}</td><td class="${r.sys.money ? '' : 'dim'}">${money}</td>`;
     body.append(tr);
     r.tr = tr;
@@ -515,19 +576,26 @@ function buildLedger() {
   };
   const tr = document.createElement('tr');
   tr.innerHTML =
-    `<td>Summed here, in your browser</td><td>${fmt(totals.lines)}</td><td>${fmt(totals.commits)}</td>` +
+    `<th scope="row">Summed here, in your browser</th><td>${fmt(totals.lines)}</td><td>${fmt(totals.commits)}</td>` +
     `<td>${totals.passed === totals.ofTotal ? fmt(totals.passed) : `${fmt(totals.passed)} of ${fmt(totals.ofTotal)}`}</td>` +
     `<td>${usd(totals.money)}</td>`;
   foot.append(tr);
   foot.style.opacity = '0';
 
   const pay = Math.round((totals.money / MONEY.replacementYear1) * 100);
+  // Counted, not typed. "five systems" and "the sixth row" were spelled out in
+  // this sentence, so adding or removing a project would have left the prose
+  // contradicting the table directly above it.
+  const earning = rows.filter((r) => r.sys.money).length;
+  const personal = rows.length - earning;
+  const word = (n) => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][n] || String(n);
   document.getElementById('excluded').innerHTML =
-    `That is <b>${pay}%</b> of what a year of me costs the business, and it comes from the five systems ` +
-    `built for it. The sixth row is my own build and earns it nothing. A further system exists and has no ` +
-    `row here at all: <b>${MONEY.excluded.name}</b>, worth ${usd(MONEY.excluded.annualUsd)} a year in the ` +
-    `source document and ${MONEY.excluded.reason}. Showing it to claim its money would be the exact move ` +
-    `the rest of this page argues against, so it comes off with its money.`;
+    `That is <b>${pay}%</b> of what a year of me costs the business, and it comes from the ${word(earning)} ` +
+    `systems built for it. ${personal === 1 ? 'The remaining row is my own build and earns it nothing.' :
+      `${word(personal)} of these rows are my own builds and earn it nothing.`} A further system exists and ` +
+    `has no row here at all: <b>${MONEY.excluded.name}</b>, worth ${usd(MONEY.excluded.annualUsd)} a year ` +
+    `in the source document and ${MONEY.excluded.reason}. Showing it to claim its money would be the exact ` +
+    `move the rest of this page argues against, so it comes off with its money.`;
 
   const failing = rows.filter((r) => r.repo.suite && r.repo.suite.passed !== r.repo.suite.total);
   document.getElementById('caveat').textContent =
@@ -552,7 +620,8 @@ function runLedger(p) {
     ledger.rows.forEach((r, i) => r.tr.classList.toggle('is-in', i < want));
     ledger.shown = want;
   }
-  ledger.foot.style.opacity = p > 0.72 ? '1' : '0';
+  const footOn = p > 0.72 ? '1' : '0';
+  if (footOn !== ledger.footState) { ledger.footState = footOn; ledger.foot.style.opacity = footOn; }
   const reasoning = p > 0.80 ? '1' : '0';
   if (reasoning !== ledger.reasoning) {
     ledger.reasoning = reasoning;
@@ -584,9 +653,16 @@ function legAt(t) {
   return k;
 }
 
+let primed = false;
+
 function frame() {
   const t = trackPos();
   camTarget = t * PX_PER_VH;
+  // A reload restores the scroll position, but the camera started at the mouth
+  // of the corridor and lerped forward from there: a reader who refreshed at
+  // the ledger watched the whole flight replay at speed. Snap on the first
+  // frame, lerp from then on.
+  if (!primed) { primed = true; camZ = camTarget; }
   // Damped playhead. A 1:1 camera reproduces every gap in the wheel event
   // stream as a stutter; worldflight.md §7c calls 0.12 the right figure for a
   // flight, and this is the same instrument.
@@ -612,7 +688,9 @@ function frame() {
       // Five of the six screens are light-UI applications. A fixed grade that
       // sits correctly at distance floods the frame when the panel is close and
       // large, so the exposure follows the distance: dimmest on the pass.
-      if (b.lit !== undefined || b.el.querySelector('.bay__panel')) {
+      // `panel` is decided once at build time; the first version asked the DOM
+      // every frame, for every strut, and the answer was always no.
+      if (b.panel) {
         const lit = (0.34 + Math.min(1, d / 2200) * 0.30).toFixed(3);
         if (lit !== b.lit) { b.lit = lit; b.el.style.setProperty('--lit', lit); }
       }
@@ -623,12 +701,25 @@ function frame() {
   const leg = LEGS[k];
   const local = Math.max(0, Math.min(1, (t - leg.c0) / leg.w));
 
-  if (gl) {
+  // Nothing moved, nothing changed state: skip the draw. The loop stays alive
+  // so it can notice the next scroll, but a page sitting still no longer costs
+  // a full-screen fragment pass every frame.
+  const still = Math.abs(camZ - frame.lastCam) < 0.05
+    && Math.abs(swayX - frame.lastSwayX) < 0.05
+    && Math.abs(swayY - frame.lastSwayY) < 0.05
+    && k === frame.lastLeg && Math.abs(local - frame.lastLocal) < 0.0005;
+  frame.lastCam = camZ; frame.lastSwayX = swayX; frame.lastSwayY = swayY;
+  frame.lastLeg = k; frame.lastLocal = local;
+
+  if (gl && !still) {
     gl.uniform1f(U.uCam, camZ);
     gl.uniform2f(U.uSway, swayX, swayY);
     // The dark stretch is authored silence: the lights go down, and they are
     // the only thing that changes, because nothing else is meant to be there.
-    const dark = k === AT.dark ? 1 - Math.abs(local - 0.5) * 1.2 : 0;
+    // A triangle scaled by 1.2 bottoms out at 0.4, not 0, so the corridor
+    // brightness stepped by nearly a third at both ends of the dark stretch.
+    // A sine bump is exactly 0 at both boundaries and 1 in the middle.
+    const dark = k === AT.dark ? Math.sin(local * Math.PI) : 0;
     gl.uniform1f(U.uDim, 1 - dark * 0.72);
     gl.uniform1f(U.uOpen, k === AT.ledger ? Math.min(1, local * 2.2) : (k > AT.ledger ? 1 : 0));
     gl.uniform1f(U.uVP, vp);
@@ -674,8 +765,12 @@ function wireCopy() {
     const fill = (sel, sys) => block.querySelectorAll(sel).forEach((el) => {
       const key = el.dataset.field;
       if (key === 'url') {
-        if (sys.url) { el.href = sys.url; el.rel = 'noopener'; el.target = '_blank'; }
-        else el.hidden = true;
+        if (sys.url) {
+          el.href = sys.url; el.rel = 'noopener'; el.target = '_blank';
+          // Six links reading "Open it" are six identical announcements in a
+          // link list, and none of them said they leave the page.
+          el.setAttribute('aria-label', `Open ${sys.name} in a new tab`);
+        } else el.hidden = true;
         return;
       }
       el.textContent = sys[key] || '';
@@ -708,6 +803,8 @@ function wireFocus() {
       const n = spec.split(/\s+/).map(parseFloat);
       pr = (n[0] + (n[1] || n[0])) / 2;
     }
+    // Same reason as the waypoint buttons: land inside the plateau, not on its
+    // leading edge, or a keyboard user arrives before the numbers do.
     scrollTo({ top: trackTop() + pr * total * innerHeight, behavior: reduce ? 'auto' : 'smooth' });
   });
 }
@@ -716,7 +813,13 @@ function wireEnd() {
   const cta = document.getElementById('cta');
   cta.textContent = CONTACT.label;
   cta.href = `mailto:${CONTACT.address}?subject=${encodeURIComponent(CONTACT.subject)}`;
-  document.querySelector('.map__cta').textContent = CONTACT.label;
+  // The rail CTA pointed at #contact, which is inside the fixed copy layer and
+  // therefore has no scroll position to travel to: the one button visible on
+  // every screen of the page did nothing at all. Same label, same intent, same
+  // destination as the plate in the end wall.
+  const railCta = document.querySelector('.map__cta');
+  railCta.textContent = CONTACT.label;
+  railCta.href = cta.href;
   document.getElementById('evidence-link').href = EVIDENCE_PAGE;
   document.getElementById('method').textContent =
     `${EV.countingRule} Measured ${EV.generatedAt}.`;
@@ -770,5 +873,23 @@ async function boot() {
 
 boot().catch((err) => {
   console.error('[pitwall] boot failed', err);
+  // Without this the page is six plates with every figure blank and no
+  // explanation: it looks like a design, not a failure, so nobody reports it.
   document.documentElement.classList.add('no-evidence');
+  // wireEnd() never ran, so the rail CTA is still the dead #contact anchor it
+  // ships as. A visitor who hits this page on a bad day should still be able to
+  // reach me.
+  const railCta = document.querySelector('.map__cta');
+  if (railCta) railCta.href = `mailto:${CONTACT.address}?subject=${encodeURIComponent(CONTACT.subject)}`;
+  const panel = document.createElement('div');
+  panel.className = 'failed';
+  panel.setAttribute('role', 'alert');
+  panel.innerHTML =
+    '<h2>The measurements did not load.</h2>' +
+    '<p>Every figure on this page is derived from one file, and that file did not arrive, so the page ' +
+    'is showing you nothing rather than showing you something it cannot support.</p>' +
+    '<p><a href="evidence.json">Try the evidence file directly</a> &middot; ' +
+    '<a href="/evidence.html">Read the written version instead</a> &middot; ' +
+    `<a href="mailto:${CONTACT.address}">${CONTACT.label}</a></p>`;
+  document.body.append(panel);
 });
