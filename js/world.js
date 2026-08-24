@@ -475,9 +475,15 @@ function buildAudit(host, repoId) {
     `<span class="audit__total-value" aria-hidden="true">0</span>` +
     `<span class="sr-only">${fmt(repo.linesTotal)} lines</span>`;
 
+  // Built once, revealed with opacity. Filling it in mid-scroll grew the block
+  // by about ninety pixels, and because the block is anchored to the bottom of
+  // the frame the whole thing shifted upward as you read it: on a 900px window
+  // the project name ended up five pixels from the top edge.
   const meta = document.createElement('p');
   meta.className = 'audit__meta';
   meta.setAttribute('aria-hidden', 'true');
+  meta.innerHTML = metaText(repo, sys);
+  meta.style.opacity = '0';
   const metaStatic = document.createElement('p');
   metaStatic.className = 'sr-only';
   metaStatic.innerHTML = metaText(repo, sys).replace(/<\/span>/g, '. </span>');
@@ -537,7 +543,7 @@ function runAudit(a, p) {
   const metaOn = p > 0.66;
   if (metaOn !== a.metaOn) {
     a.metaOn = metaOn;
-    a.metaEl.innerHTML = metaOn ? metaText(a.repo, a.sys) : '';
+    a.metaEl.style.opacity = metaOn ? '1' : '0';
   }
 }
 

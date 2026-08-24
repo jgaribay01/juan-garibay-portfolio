@@ -307,7 +307,7 @@
 }
 .audit__total-label { color: var(--sc-ink-soft); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.66rem; }
 .audit__total-value { font-size: var(--sc-t-xl); font-weight: 600; color: var(--sc-accent); line-height: 1; }
-.audit__meta { margin-top: var(--sc-2); color: var(--sc-ink-soft); display: flex; flex-wrap: wrap; gap: var(--sc-4); }
+.audit__meta { margin-top: var(--sc-2); color: var(--sc-ink-soft); display: flex; flex-wrap: wrap; gap: var(--sc-4); transition: opacity 260ms var(--sc-ease-out); }
 .audit__meta b { color: var(--sc-ink); font-weight: 500; }
 /* Quoted, not measured. Everything else in this readout was summed in front of
    the reader; these two were not, and they are marked so nobody has to guess
@@ -452,16 +452,43 @@
    loses its head first: the project name and the top of the readout. Step the
    type down and drop the two supplementary lines rather than clipping the
    heading. */
-@media (min-width: 901px) and (max-height: 800px) {
+/* A dense readout plus a heading at display scale does not fit a 900px laptop
+   window with the plate anchored to the bottom. Measured, not guessed: the
+   tallest block is 787px once its metadata is present. */
+@media (min-width: 901px) and (max-height: 960px) {
+  .sc-copy--lead.plate, .sc-copy--trail.plate { bottom: clamp(1.5rem, 5vh, 3.5rem); }
+  .plate h2 { font-size: var(--sc-t-2xl); }
+}
+/* The audit rows cannot be dropped: they are the arithmetic, and hiding one
+   would leave a total that does not match the rows above it. So what gives way
+   at each step is the supplementary prose, in the order it can best be spared.
+   Every threshold below is measured against the tallest block, not guessed. */
+@media (min-width: 901px) and (max-height: 880px) {
   .plate { padding: var(--sc-4); }
-  .plate h2 { font-size: var(--sc-t-xl); }
   .plate .sc-body { font-size: var(--sc-t-sm); margin-bottom: var(--sc-3); }
-  .sc-copy--lead.plate, .sc-copy--trail.plate { bottom: clamp(1.5rem, 5vh, 3rem); }
+  .hard { display: none; }
+}
+@media (min-width: 901px) and (max-height: 790px) {
+  .plate h2 { font-size: var(--sc-t-xl); }
+  .shift { display: none; }
+  .audit__row { padding: 1px 0; }
   .audit__total-value { font-size: var(--sc-t-lg); }
 }
-@media (min-width: 901px) and (max-height: 680px) {
-  .hard, .shift { display: none; }
-  .audit__row { padding: 1px 0; }
+@media (min-width: 901px) and (max-height: 700px) {
+  .audit { font-size: 0.66rem; }
+  .plate .sc-body { display: none; }
+}
+/* The ledger is the one block nothing may be cut from: it is the arithmetic and
+   the caveat that qualifies it. Below the height where it fits, it scrolls
+   inside itself rather than losing its head and its footnote. */
+@media (max-height: 700px) {
+  .plate--ledger {
+    max-height: calc(100svh - 3rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .plate--ledger h2 { font-size: var(--sc-t-xl); }
+  .excluded, .caveat { font-size: var(--sc-t-xs); }
 }
 @media (max-width: 900px) and (max-height: 680px) {
   .hard, .shift { display: none; }
