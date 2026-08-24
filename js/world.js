@@ -447,9 +447,14 @@ function metaText(repo, sys) {
     bits.push('<span>no test suite</span>');
   }
   if (repo.deck) bits.push(`<span><b>${fmt(repo.deck.cards)}</b> cards, ${fmt(repo.deck.topics)} topics</span>`);
-  if (sys.money) bits.push(`<span><b>${usd(sys.money.annualUsd)}</b> a year</span>`);
-  if (sys.personal) bits.push('<span>personal build, earns nothing</span>');
+  // 8 — the total is physical lines; the code-only figure is materially lower
+  // and was never shown anywhere, which made one number look like both.
+  bits.push(`<span><b>${fmt(repo.linesCode)}</b> of those lines are code, the rest blank or comment</span>`);
   bits.push(`<span>counted from ${repo.basis}</span>`);
+  // Money last, and labelled, because everything above it was measured and this
+  // was not. In the first cut it sat mid-list and inherited "counted from".
+  if (sys.money) bits.push(`<span class="audit__quoted"><b>${usd(sys.money.annualUsd)}</b> a year, quoted from the source document, not measured</span>`);
+  if (sys.personal) bits.push('<span class="audit__quoted">personal build, earns the business nothing</span>');
   return bits.join('');
 }
 
@@ -518,15 +523,16 @@ function buildLedger() {
 
   const pay = Math.round((totals.money / MONEY.replacementYear1) * 100);
   document.getElementById('excluded').innerHTML =
-    `That is <b>${pay}%</b> of what this year costs, from five systems. A sixth exists and is not in this ` +
-    `table: <b>${MONEY.excluded.name}</b>, worth ${usd(MONEY.excluded.annualUsd)} a year in the source ` +
-    `document and ${MONEY.excluded.reason}. Showing it to claim its money would be the exact move the rest ` +
-    `of this page argues against, so it comes off with its money.`;
+    `That is <b>${pay}%</b> of what a year of me costs the business, and it comes from the five systems ` +
+    `built for it. The sixth row is my own build and earns it nothing. A further system exists and has no ` +
+    `row here at all: <b>${MONEY.excluded.name}</b>, worth ${usd(MONEY.excluded.annualUsd)} a year in the ` +
+    `source document and ${MONEY.excluded.reason}. Showing it to claim its money would be the exact move ` +
+    `the rest of this page argues against, so it comes off with its money.`;
 
   const failing = rows.filter((r) => r.repo.suite && r.repo.suite.passed !== r.repo.suite.total);
   document.getElementById('caveat').textContent =
     MONEY.caveat + (failing.length
-      ? ` Measured ${EV.generatedAt}: ${failing.map((r) => r.sys.name).join(', ')} has a failing test, and this page says so rather than rounding it up.`
+      ? ` Measured ${EV.generatedAt}: ${failing.map((r) => r.sys.name).join(', ')} has a test that is not passing. The evidence file records how many passed and how many ran, not why the difference exists, so that is as far as this sentence goes. The page says it rather than rounding up.`
       : '');
 
   ledger = {

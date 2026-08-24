@@ -302,6 +302,11 @@
 .audit__total-value { font-size: var(--sc-t-xl); font-weight: 600; color: var(--sc-accent); line-height: 1; }
 .audit__meta { margin-top: var(--sc-2); color: var(--sc-ink-soft); display: flex; flex-wrap: wrap; gap: var(--sc-4); }
 .audit__meta b { color: var(--sc-ink); font-weight: 500; }
+/* Quoted, not measured. Everything else in this readout was summed in front of
+   the reader; these two were not, and they are marked so nobody has to guess
+   which is which. */
+.audit__quoted { color: color-mix(in oklab, var(--sc-ink-soft) 88%, var(--sc-accent)); }
+.audit__quoted::before { content: "\00B7 "; opacity: 0.6; }
 
 /* ------------------------------------------------------------ the ledger */
 /* The peak lights the whole corridor up behind this block, so the readout has
