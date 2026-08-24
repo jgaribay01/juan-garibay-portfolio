@@ -139,9 +139,16 @@
   width: clamp(14rem, 16vw, 17.5rem);
   display: flex; flex-direction: column; gap: var(--sc-5);
   padding: var(--sc-5) var(--sc-4) var(--sc-5) var(--sc-5);
+  /* The rail is chrome over a moving world, and a bay panel passing behind it
+     is the brightest thing on the page. A soft wash let a light-UI screenshot
+     come through and put waypoint labels at unreadable contrast, so this is an
+     actual panel that fades only at its trailing edge. */
   background: linear-gradient(to right,
-    color-mix(in oklab, var(--sc-canvas) 92%, transparent),
-    color-mix(in oklab, var(--sc-canvas) 40%, transparent) 78%, transparent);
+    color-mix(in oklab, var(--sc-canvas) 98%, transparent) 0%,
+    color-mix(in oklab, var(--sc-canvas) 97%, transparent) 74%,
+    color-mix(in oklab, var(--sc-canvas) 78%, transparent) 92%,
+    transparent 100%);
+  backdrop-filter: blur(3px);
   border-right: 1px solid var(--rule);
   font-family: var(--sc-font-mono);
   font-size: var(--sc-t-xs);
@@ -231,8 +238,23 @@
   font-size: var(--sc-t-xl); line-height: 1.3; color: var(--sc-ink);
   max-width: 24ch; text-wrap: balance;
 }
+/* The constraint that actually took thinking, in one line per system. Lines
+   and commits prove volume; this is the part that does not. */
+.hard {
+  margin: var(--sc-3) 0 0; font-size: var(--sc-t-sm); line-height: 1.55;
+  color: var(--sc-ink); max-width: 46ch;
+  border-left: 1px solid var(--rule-hot); padding-left: var(--sc-3);
+}
+.hard:empty { display: none; }
+.sc-copy--trail .hard { border-left: 0; border-right: 1px solid var(--rule-hot); padding-left: 0; padding-right: var(--sc-3); margin-left: auto; }
 .shift { margin: var(--sc-4) 0 0; font-size: var(--sc-t-sm); color: var(--sc-ink-soft); }
 .shift b { color: var(--sc-ink); font-weight: 600; }
+/* Two clauses run together read as one broken sentence: "a second importer
+   quoting from spreadsheets its own quoting tool". They are a before and an
+   after, so they are labelled as one. */
+.shift i { font-style: normal; font-family: var(--sc-font-mono); font-size: 0.66rem;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--sc-accent); margin-right: var(--sc-2); }
+.shift .then { display: block; margin-top: var(--sc-1); }
 .risk { margin: var(--sc-4) 0 0; font-size: var(--sc-t-xs); color: var(--sc-accent); font-family: var(--sc-font-mono); max-width: 40ch; }
 .risk:empty { display: none; }
 
@@ -256,7 +278,7 @@
   font-variant-numeric: tabular-nums;
   border-top: 1px solid var(--rule);
 }
-.audit--second { margin-top: var(--sc-5); }
+
 .audit__head {
   display: flex; justify-content: space-between; gap: var(--sc-4);
   padding: var(--sc-2) 0; color: var(--sc-ink-soft);

@@ -36,14 +36,16 @@ const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
    second copy of a fact, it is the same authored number the engine reads, and
    `assertLegs` below fails loudly if the two ever disagree. */
 const LEGS = [
-  { w: 1.2, label: 'Arrival',             anchor: 'lead'   },
-  { w: 1.6, label: 'Rutero TDV',          anchor: 'trail'  },
-  { w: 1.5, label: 'Two quoters',     anchor: 'lead'   },
-  { w: 1.4, label: 'Triage, and the door', anchor: 'trail'  },
-  { w: 1.4, label: 'Currents',            anchor: 'lead'   },
-  { w: 0.9, label: 'Dark stretch',        anchor: 'center' },
-  { w: 2.6, label: 'The ledger',          anchor: 'lead'   },
-  { w: 1.1, label: 'End wall',        anchor: 'center' },
+  { key: 'arrival',   w: 1.1, label: 'Arrival',        anchor: 'lead'   },
+  { key: 'rutero',    w: 1.5, label: 'Rutero TDV',     anchor: 'trail', id: 'rutero-tdv' },
+  { key: 'cotizador', w: 1.1, label: 'Cotizador TDV',  anchor: 'lead',  id: 'cotizador-tdv' },
+  { key: 'ff',        w: 1.2, label: 'Farmers Fresh',  anchor: 'trail', id: 'cotizador-farmers-fresh' },
+  { key: 'dtc',       w: 1.1, label: 'Data Triage',    anchor: 'lead',  id: 'data-triage-center' },
+  { key: 'outbound',  w: 1.1, label: 'Outbound Log',   anchor: 'trail', id: 'tdv-outbound-log' },
+  { key: 'currents',  w: 1.3, label: 'Currents',       anchor: 'lead',  id: 'currents' },
+  { key: 'dark',      w: 0.8, label: 'Dark stretch',   anchor: 'center' },
+  { key: 'ledger',    w: 2.6, label: 'The ledger',     anchor: 'lead'   },
+  { key: 'end',       w: 1.0, label: 'End wall',       anchor: 'center' },
 ];
 
 /** World px travelled per viewport-height of scroll. One pace, everywhere:
@@ -54,7 +56,11 @@ const PERSPECTIVE = 1000;
 const HW = 900, HH = 560;           // corridor half-extents, world px
 
 let total = 0;
-LEGS.forEach((l) => { l.c0 = total; total += l.w; l.c1 = total; l.mid = (l.c0 + l.c1) / 2; });
+LEGS.forEach((l, i) => { l.i = i; l.c0 = total; total += l.w; l.c1 = total; l.mid = (l.c0 + l.c1) / 2; });
+/* Legs are addressed by name, never by index. The ledger moved from position 6
+   to position 8 when the paired legs were split, and every `k === 6` in the
+   frame loop would have kept pointing at the wrong place. */
+const AT = Object.fromEntries(LEGS.map((l, i) => [l.key, i]));
 const END_Z = total * PX_PER_VH + 620;
 
 function assertLegs() {
@@ -120,72 +126,78 @@ function trackTop() {
 
 /* --------------------------------------------------------------- the bays */
 
-/** Which systems stand in which leg, and on which side of the corridor. */
-const BAYS = [
-  { leg: 1, items: [{ id: 'rutero-tdv', x: -430, y: -30, rot: 30, w: 780, h: 487 }] },
-  { leg: 2, items: [
-      { id: 'cotizador-tdv',           x:  440, y: -70, rot: -30, w: 700, h: 437 },
-      { id: 'cotizador-farmers-fresh', x: -450, y:  90, rot:  30, w: 560, h: 428 },
-    ] },
-  { leg: 3, items: [
-      { id: 'data-triage-center', x: -440, y: -50, rot: 30, w: 720, h: 450 },
-      { id: 'tdv-outbound-log',   x:  445, y:  80, rot: -30, w: 640, h: 400 },
-    ] },
-  { leg: 4, items: [{ id: 'currents', x: 400, y: 0, rot: -26, w: 260, h: 559 }] },
-];
+/**
+ * Where a panel stands inside its leg.
+ *
+ * 0.94, not the midpoint. A bay at the midpoint is reached and passed exactly
+ * while its copy is ramping up, so by the time the description was legible the
+ * thing it described had gone behind the reader: at 16% the copy read "Rutero
+ * TDV" and the screen held the two quoting tools. Here the panel approaches
+ * through the whole plateau and only passes while the copy is ramping out.
+ */
+const PANEL_AT = 0.94;
+/** Lateral standoff, on the opposite side from the copy. */
+const PANEL_X = 620;
+
+const SHAPE = {
+  'rutero-tdv':              { w: 820, h: 512 },
+  'cotizador-tdv':           { w: 760, h: 474 },
+  'cotizador-farmers-fresh': { w: 620, h: 474 },
+  'data-triage-center':      { w: 780, h: 487 },
+  'tdv-outbound-log':        { w: 720, h: 450 },
+  currents:                  { w: 285, h: 613 },
+};
 
 const bayEls = [];
 
 function buildBays() {
-  BAYS.forEach((bay) => {
-    const leg = LEGS[bay.leg];
-    bay.items.forEach((item, n) => {
-      const sys = SYSTEMS[item.id];
-      const repo = byId.get(item.id);
-      if (!sys) return;
-      // Spread multiple panels along the leg's depth rather than stacking them
-      // at one z, so the camera passes them one at a time.
-      const span = leg.w * PX_PER_VH;
-      const z = (leg.c0 * PX_PER_VH) + span * (bay.items.length === 1 ? 0.5 : 0.28 + n * 0.40);
+  LEGS.filter((leg) => leg.id).forEach((leg) => {
+    const sys = SYSTEMS[leg.id];
+    const repo = byId.get(leg.id);
+    const shape = SHAPE[leg.id];
+    if (!sys || !shape) return;
 
-      const el = document.createElement('div');
-      el.className = 'bay';
-      el.dataset.z = String(z);
+    const z = (leg.c0 + leg.w * PANEL_AT) * PX_PER_VH;
+    const side = leg.anchor === 'lead' ? 1 : -1;   // opposite the copy
+    const rot = -side * 28;
 
-      const panel = document.createElement('div');
-      panel.className = 'bay__panel';
-      panel.style.cssText =
-        `width:${item.w}px;height:${item.h}px;left:${-item.w / 2}px;top:${-item.h / 2}px;` +
-        `transform:rotateY(${item.rot}deg)`;
-      const img = document.createElement('img');
-      img.src = sys.shot; img.alt = ''; img.width = sys.shotW; img.height = sys.shotH;
-      img.loading = 'lazy'; img.decoding = 'async';
-      panel.append(img);
-      el.append(panel);
+    const el = document.createElement('div');
+    el.className = 'bay';
+    el.dataset.z = String(z);
 
-      // Gauges: bar heights taken from the same rows the readout sums. Shapes,
-      // not text, so nothing is baked into a picture.
-      if (repo) {
-        const rows = auditRows(repo, 7);
-        const max = Math.max(...rows.map((r) => r.lines), 1);
-        const g = document.createElement('div');
-        g.className = 'bay__gauge';
-        g.style.cssText =
-          `left:${-item.w / 2}px;top:${item.h / 2 + 26}px;height:170px;` +
-          `transform:rotateY(${item.rot}deg);transform-origin:0 0`;
-        rows.forEach((r) => {
-          const bar = document.createElement('i');
-          bar.className = 'bay__bar';
-          bar.style.height = Math.max(3, (r.lines / max) * 170) + 'px';
-          g.append(bar);
-        });
-        el.append(g);
-      }
+    const panel = document.createElement('div');
+    panel.className = 'bay__panel';
+    panel.style.cssText =
+      `width:${shape.w}px;height:${shape.h}px;left:${-shape.w / 2}px;top:${-shape.h / 2}px;` +
+      `transform:rotateY(${rot}deg)`;
+    const img = document.createElement('img');
+    img.src = sys.shot; img.alt = ''; img.width = sys.shotW; img.height = sys.shotH;
+    img.loading = 'lazy'; img.decoding = 'async';
+    panel.append(img);
+    el.append(panel);
 
-      el.style.transform = `translate3d(${item.x}px, ${item.y}px, ${-z}px)`;
-      cam.append(el);
-      bayEls.push({ el, z });
-    });
+    // Gauges: bar heights taken from the same rows the readout sums. Shapes,
+    // not text, so nothing is baked into a picture.
+    if (repo) {
+      const rows = auditRows(repo, 7);
+      const max = Math.max(...rows.map((r) => r.lines), 1);
+      const g = document.createElement('div');
+      g.className = 'bay__gauge';
+      g.style.cssText =
+        `left:${-shape.w / 2}px;top:${shape.h / 2 + 26}px;height:170px;` +
+        `transform:rotateY(${rot}deg);transform-origin:0 0`;
+      rows.forEach((r) => {
+        const bar = document.createElement('i');
+        bar.className = 'bay__bar';
+        bar.style.height = Math.max(3, (r.lines / max) * 170) + 'px';
+        g.append(bar);
+      });
+      el.append(g);
+    }
+
+    el.style.transform = `translate3d(${side * PANEL_X}px, ${side > 0 ? -40 : 60}px, ${-z}px)`;
+    cam.append(el);
+    bayEls.push({ el, z });
   });
 
   // Struts down the whole corridor. They are what makes the travel legible:
@@ -582,14 +594,14 @@ function frame() {
 
   for (const b of bayEls) {
     const d = b.z - camZ;
-    const on = d > 90 && d < 3600;
+    const on = d > 30 && d < 3600;
     if (on !== b.on) { b.on = on; b.el.style.visibility = on ? 'visible' : 'hidden'; }
     if (on) {
       // Fade at BOTH ends. Only the far end was faded on the first cut, so a
       // panel about to pass the camera filled half the frame with a blurred
       // fragment of a screenshot behind the copy.
       const far = Math.min(1, Math.max(0, 1 - (d - 2900) / 700));
-      const near = Math.min(1, Math.max(0, (d - 120) / 540));
+      const near = Math.min(1, Math.max(0, (d - 40) / 300));
       b.el.style.opacity = String(far * near);
     }
   }
@@ -603,9 +615,9 @@ function frame() {
     gl.uniform2f(U.uSway, swayX, swayY);
     // The dark stretch is authored silence: the lights go down, and they are
     // the only thing that changes, because nothing else is meant to be there.
-    const dark = k === 5 ? 1 - Math.abs(local - 0.5) * 1.2 : 0;
+    const dark = k === AT.dark ? 1 - Math.abs(local - 0.5) * 1.2 : 0;
     gl.uniform1f(U.uDim, 1 - dark * 0.72);
-    gl.uniform1f(U.uOpen, k === 6 ? Math.min(1, local * 2.2) : (k === 7 ? 1 : 0));
+    gl.uniform1f(U.uOpen, k === AT.ledger ? Math.min(1, local * 2.2) : (k > AT.ledger ? 1 : 0));
     gl.uniform1f(U.uVP, vp);
     // The peak, in the world: when the totals land, the corridor lights up.
     // It is the largest change on the page and it happens once.
@@ -613,7 +625,7 @@ function frame() {
     // the first cut it peaked at local 0.84 while the block was already ramping
     // out at 0.69, so the corridor lit up exactly as the numbers left: the peak
     // was competing with itself.
-    const surge = k === 6
+    const surge = k === AT.ledger
       ? Math.max(0, Math.min(1, (local - 0.68) / 0.10)) * (1 - Math.max(0, Math.min(1, (local - 0.84) / 0.06)))
       : 0;
     gl.uniform1f(U.uSurge, surge);
@@ -621,7 +633,7 @@ function frame() {
   }
 
   for (const a of audits) runAudit(a, a.leg === k ? local : (k > a.leg ? 1 : 0));
-  runLedger(k === 6 ? local : (k > 6 ? 1 : 0));
+  runLedger(k === AT.ledger ? local : (k > AT.ledger ? 1 : 0));
 
   const running = audits.reduce((s, a) => s + a.sum, 0);
   if (running !== frame.lastRunning) { frame.lastRunning = running; runningEl.textContent = fmt(running); }
@@ -645,10 +657,9 @@ function frame() {
 function wireCopy() {
   document.querySelectorAll('[data-system]').forEach((block) => {
     const id = block.dataset.system;
-    const id2 = block.dataset.system2;
-    const legIndex = LEGS.findIndex((l) => l.label === blockLeg(block));
+    const legIndex = LEGS.findIndex((l) => l.id === id);
     const fill = (sel, sys) => block.querySelectorAll(sel).forEach((el) => {
-      const key = el.dataset.field || el.dataset.field2;
+      const key = el.dataset.field;
       if (key === 'url') {
         if (sys.url) { el.href = sys.url; el.rel = 'noopener'; el.target = '_blank'; }
         else el.hidden = true;
@@ -657,21 +668,10 @@ function wireCopy() {
       el.textContent = sys[key] || '';
     });
     fill('[data-field]', SYSTEMS[id]);
-    if (id2) fill('[data-field2]', SYSTEMS[id2]);
 
     const host = block.querySelector('[data-audit]');
     if (host) { const a = buildAudit(host, id); if (a) a.leg = legIndex; }
-    const host2 = block.querySelector('[data-audit-2]');
-    if (host2 && id2) { const a = buildAudit(host2, id2); if (a) a.leg = legIndex; }
   });
-}
-
-/** Which leg a copy block belongs to, from the window it declares. */
-function blockLeg(block) {
-  const spec = (block.getAttribute('data-sc-window') || '').trim().split(/\s+/).map(parseFloat);
-  if (isNaN(spec[0])) return LEGS[0].label;
-  const mid = ((spec[0] + (spec[1] || spec[0])) / 2) * total;
-  return LEGS[legAt(mid)].label;
 }
 
 /**

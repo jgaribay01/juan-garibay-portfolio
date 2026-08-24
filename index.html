@@ -51,80 +51,124 @@
       <div class="scene__cam" id="cam"></div>
     </div>
 
-    <!-- Eight legs. Empty by design: they are the timing spine that publishes
-         --sc-seg and fires sc:waypoint. The world they time is the canvas and
-         the 3D scene above, which never crossfade because they never cut. -->
-    <div data-sc-segment data-sc-w="1.2" data-sc-waypoint="Arrival"></div>
-    <div data-sc-segment data-sc-w="1.6" data-sc-waypoint="Rutero TDV"></div>
-    <div data-sc-segment data-sc-w="1.5" data-sc-waypoint="Two quoters"></div>
-    <div data-sc-segment data-sc-w="1.4" data-sc-waypoint="Triage, and the door"></div>
-    <div data-sc-segment data-sc-w="1.4" data-sc-waypoint="Currents"></div>
-    <div data-sc-segment data-sc-w="0.9" data-sc-waypoint="Dark stretch"></div>
+    <!-- Ten legs, one per project plus arrival, the dark stretch, the ledger
+         and the end wall. Empty by design: they are the timing spine that
+         publishes --sc-seg and fires sc:waypoint. The world they time is the
+         canvas and the 3D scene above, which never crossfade because they
+         never cut.
+
+         One project per leg is not a layout preference. Two projects sharing a
+         leg shared one description, so the heading could not be true of the
+         panel on screen: at 32% the copy read "the quoting problem, twice"
+         while the reader was looking at Data Triage and the Outbound Log. -->
+    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="Arrival"></div>
+    <div data-sc-segment data-sc-w="1.5" data-sc-waypoint="Rutero TDV"></div>
+    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="Cotizador TDV"></div>
+    <div data-sc-segment data-sc-w="1.2" data-sc-waypoint="Farmers Fresh"></div>
+    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="Data Triage"></div>
+    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="Outbound Log"></div>
+    <div data-sc-segment data-sc-w="1.3" data-sc-waypoint="Currents"></div>
+    <div data-sc-segment data-sc-w="0.8" data-sc-waypoint="Dark stretch"></div>
     <div data-sc-segment data-sc-w="2.6" data-sc-linger="0.42" data-sc-waypoint="The ledger"></div>
-    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="End wall"></div>
+    <div data-sc-segment data-sc-w="1.0" data-sc-waypoint="End wall"></div>
   </div>
 
   <div data-sc-world-copy>
     <div class="sc-world__scrim scrim" aria-hidden="true"></div>
 
     <!-- 1 · ARRIVAL — suspicion -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0 0.092 0 0.55">
+    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0 0.078 0 0.55">
       <h1 class="sc-display sc-display--xl">Six systems, running.</h1>
       <p class="sc-body">Built in seven weeks for a produce distributor in McAllen. Nothing here is a mockup.</p>
       <p class="note">Every number on this page is being counted right now, out of a file you can download.</p>
     </div>
 
     <!-- 2 · RUTERO — scale -->
-    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.106 0.236 0.16 0.16" data-system="rutero-tdv">
+    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.088 0.201 0.16 0.16" data-system="rutero-tdv">
       <p class="kicker" data-field="cat"></p>
       <h2 class="sc-display sc-display--lg" data-field="name"></h2>
       <p class="sc-body" data-field="line"></p>
       <p class="sr-only" data-field="alt"></p>
       <div class="audit" data-audit></div>
-      <p class="shift"><span data-field="was"></span> <b data-field="now"></b></p>
+      <p class="hard" data-field="hard"></p>
+      <p class="shift"><i>Was</i><span data-field="was"></span><span class="then"><i>Now</i><b data-field="now"></b></span></p>
+      <p class="risk" data-field="risk"></p>
       <a class="out" data-field="url" href="#">Open it</a>
     </div>
 
-    <!-- 3 · THE TWO QUOTERS — precision -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.242 0.364 0.16 0.16" data-system="cotizador-tdv" data-system2="cotizador-farmers-fresh">
-      <p class="kicker">Two of them, four days apart</p>
-      <h2 class="sc-display sc-display--lg">The quoting problem, twice.</h2>
-      <p class="sc-body" data-field="hard"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <p class="sr-only" data-field2="alt"></p>
-      <div class="audit" data-audit></div>
-      <div class="audit audit--second" data-audit-2></div>
-      <p class="risk" data-field2="risk"></p>
-    </div>
-
-    <!-- 4 · TRIAGE AND THE DOOR — restraint -->
-    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.370 0.484 0.16 0.16" data-system="data-triage-center" data-system2="tdv-outbound-log">
-      <h2 class="sc-display sc-display--md">One of these earns nothing.</h2>
-      <p class="sc-body" data-field="hard"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <p class="sr-only" data-field2="alt"></p>
-      <div class="audit" data-audit></div>
-      <div class="audit audit--second" data-audit-2></div>
-    </div>
-
-    <!-- 5 · CURRENTS — release -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.490 0.604 0.16 0.16" data-system="currents">
+    <!-- 3 · COTIZADOR TDV — precision -->
+    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.205 0.287 0.18 0.18" data-system="cotizador-tdv">
       <p class="kicker" data-field="cat"></p>
       <h2 class="sc-display sc-display--lg" data-field="name"></h2>
       <p class="sc-body" data-field="line"></p>
       <p class="sr-only" data-field="alt"></p>
       <div class="audit" data-audit></div>
+      <p class="hard" data-field="hard"></p>
+      <p class="shift"><i>Was</i><span data-field="was"></span><span class="then"><i>Now</i><b data-field="now"></b></span></p>
+      <p class="risk" data-field="risk"></p>
       <a class="out" data-field="url" href="#">Open it</a>
     </div>
 
-    <!-- 6 · DARK STRETCH — anticipation. Authored silence, recorded in BRIEF.md.
+    <!-- 4 · FARMERS FRESH — repetition, done deliberately -->
+    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.291 0.381 0.18 0.18" data-system="cotizador-farmers-fresh">
+      <p class="kicker" data-field="cat"></p>
+      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
+      <p class="sc-body" data-field="line"></p>
+      <p class="sr-only" data-field="alt"></p>
+      <div class="audit" data-audit></div>
+      <p class="hard" data-field="hard"></p>
+      <p class="shift"><i>Was</i><span data-field="was"></span><span class="then"><i>Now</i><b data-field="now"></b></span></p>
+      <p class="risk" data-field="risk"></p>
+      <a class="out" data-field="url" href="#">Open it</a>
+    </div>
+
+    <!-- 5 · DATA TRIAGE — restraint. The one worth nothing. -->
+    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.385 0.467 0.18 0.18" data-system="data-triage-center">
+      <p class="kicker" data-field="cat"></p>
+      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
+      <p class="sc-body" data-field="line"></p>
+      <p class="sr-only" data-field="alt"></p>
+      <div class="audit" data-audit></div>
+      <p class="hard" data-field="hard"></p>
+      <p class="shift"><i>Was</i><span data-field="was"></span><span class="then"><i>Now</i><b data-field="now"></b></span></p>
+      <p class="risk" data-field="risk"></p>
+      <a class="out" data-field="url" href="#">Open it</a>
+    </div>
+
+    <!-- 6 · OUTBOUND LOG — plainness -->
+    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.471 0.553 0.18 0.18" data-system="tdv-outbound-log">
+      <p class="kicker" data-field="cat"></p>
+      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
+      <p class="sc-body" data-field="line"></p>
+      <p class="sr-only" data-field="alt"></p>
+      <div class="audit" data-audit></div>
+      <p class="hard" data-field="hard"></p>
+      <p class="shift"><i>Was</i><span data-field="was"></span><span class="then"><i>Now</i><b data-field="now"></b></span></p>
+      <p class="risk" data-field="risk"></p>
+      <a class="out" data-field="url" href="#">Open it</a>
+    </div>
+
+    <!-- 7 · CURRENTS — release -->
+    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.557 0.654 0.16 0.16" data-system="currents">
+      <p class="kicker" data-field="cat"></p>
+      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
+      <p class="sc-body" data-field="line"></p>
+      <p class="sr-only" data-field="alt"></p>
+      <div class="audit" data-audit></div>
+      <p class="hard" data-field="hard"></p>
+      <p class="shift"><i>Was</i><span data-field="was"></span><span class="then"><i>Now</i><b data-field="now"></b></span></p>
+      <p class="risk" data-field="risk"></p>
+      <a class="out" data-field="url" href="#">Open it</a>
+    </div>
+
+    <!-- 8 · DARK STRETCH — anticipation. Authored silence, recorded in BRIEF.md.
          One line, no instrumentation, nothing accumulating. -->
-    <div class="sc-copy sc-copy--center plate plate--bare" data-sc-copy data-sc-window="0.610 0.681 0.28 0.28">
+    <div class="sc-copy sc-copy--center plate plate--bare" data-sc-copy data-sc-window="0.660 0.717 0.28 0.28">
       <p class="quiet">Lines and commits prove volume. They do not prove judgement.</p>
     </div>
 
     <!-- 7 · THE LEDGER — reckoning. The peak. -->
-    <div class="sc-copy plate plate--ledger" data-sc-copy data-sc-window="0.688 0.902 0.22 0.10">
+    <div class="sc-copy plate plate--ledger" data-sc-copy data-sc-window="0.722 0.920 0.22 0.10">
       <h2 class="sc-display sc-display--md">Everything you just flew past.</h2>
       <div class="ledger-scroll">
       <table class="ledger" id="ledger">
