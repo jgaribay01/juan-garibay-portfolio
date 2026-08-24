@@ -1,0 +1,401 @@
+/* pitwall — the page's own layer. scrollcraft.css is the floor; this is the
+   composition. Nothing here restyles a [data-sc-*] selector except the two
+   the mode explicitly hands over: .sc-world__scrim and the copy blocks' own
+   classes. */
+
+/* ------------------------------------------------------------------ faces */
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "JetBrains Mono"; src: url("fonts/jetbrains-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "JetBrains Mono"; src: url("fonts/jetbrains-mono-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "JetBrains Mono"; src: url("fonts/jetbrains-mono-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+
+/* ----------------------------------------------------------------- tokens */
+:root {
+  --sc-canvas:     #05070B;
+  --sc-surface:    #0D1219;
+  --sc-ink:        #EDF3F8;
+  --sc-ink-soft:   #8FA3B4;   /* 7.5:1 on canvas. Tinted blue, not flat gray. */
+  --sc-accent:     #FF4E12;   /* 5.1:1 on canvas. One accent, and it owns the
+                                 instrumentation: every lit thing is this hue. */
+  --sc-accent-ink: #0A0500;
+
+  --sc-font-display: "Space Grotesk", system-ui, sans-serif;
+  --sc-font-text:    "Space Grotesk", system-ui, sans-serif;
+  --sc-font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* One radius scale, held everywhere. */
+  --sc-r-sm: 2px; --sc-r-md: 4px; --sc-r-lg: 8px;
+
+  --plate-bg: color-mix(in oklab, var(--sc-canvas) 82%, transparent);
+  --rule: color-mix(in oklab, var(--sc-ink) 14%, transparent);
+  --rule-hot: color-mix(in oklab, var(--sc-accent) 42%, transparent);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- the world */
+#corridor {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  display: block;
+}
+
+/* The CSS 3D scene shares the corridor's camera. Its perspective is set from
+   js/world.js so the two layers agree about how far away things are; a shader
+   and a stylesheet disagreeing by 10% reads as the panels sliding on top of the
+   world instead of standing in it. */
+.scene {
+  position: absolute; inset: 0;
+  z-index: 1;
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  pointer-events: none;
+  overflow: clip;
+}
+.scene__cam {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.bay { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
+.bay__panel {
+  position: absolute;
+  transform-origin: 50% 50%;
+  padding: 10px;
+  background: linear-gradient(#141a22, #080b10);
+  border: 1px solid color-mix(in oklab, var(--sc-accent) 60%, transparent);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.9), 0 30px 90px -20px rgb(0 0 0 / 0.95);
+}
+/* Five of the six screens are light-UI applications. Dropped straight onto a
+   black corridor they read as blown-out white slabs, so they are graded down to
+   sit in the room rather than float over it. */
+.bay__panel img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  filter: brightness(0.52) contrast(1.28) saturate(0.80);
+}
+/* A raised lip catches light, and a tint puts the screen in the same room as
+   everything else. Ungraded, the light-UI screenshots read as blank grey slabs
+   floating in front of the corridor rather than mounted in it. */
+.bay__panel::after {
+  content: ""; position: absolute; inset: 0;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+  background: linear-gradient(155deg,
+    color-mix(in oklab, var(--sc-accent) 14%, transparent) 0%,
+    transparent 42%,
+    color-mix(in oklab, var(--sc-canvas) 55%, transparent) 100%);
+  pointer-events: none;
+}
+
+/* The gauges are the only place a figure appears without words around it, and
+   they are shapes, not text: bar heights taken from the same rows the audit
+   readout is summing. Nothing is baked into an image. */
+.bay__gauge { position: absolute; display: flex; align-items: flex-end; gap: 6px; }
+.bay__bar {
+  width: 10px;
+  background: linear-gradient(to top, var(--sc-accent), color-mix(in oklab, var(--sc-accent) 30%, transparent));
+  transform-origin: 50% 100%;
+}
+.bay__strut {
+  position: absolute;
+  background: color-mix(in oklab, var(--sc-accent) 55%, transparent);
+}
+
+/* -------------------------------------------------------------- the scrim */
+/* Density only where the copy is, and it follows the copy: the anchor changes
+   leg by leg, so a single fixed gradient would protect the wrong corner for
+   most of the flight. */
+.scrim { transition: opacity 240ms var(--sc-ease-out); }
+.scrim[data-anchor="lead"] {
+  background: linear-gradient(to top right,
+    color-mix(in oklab, var(--sc-canvas) 96%, transparent) 0%,
+    color-mix(in oklab, var(--sc-canvas) 78%, transparent) 32%,
+    color-mix(in oklab, var(--sc-canvas) 28%, transparent) 56%,
+    transparent 76%);
+}
+.scrim[data-anchor="trail"] {
+  background: linear-gradient(to top left,
+    color-mix(in oklab, var(--sc-canvas) 96%, transparent) 0%,
+    color-mix(in oklab, var(--sc-canvas) 78%, transparent) 32%,
+    color-mix(in oklab, var(--sc-canvas) 28%, transparent) 56%,
+    transparent 76%);
+}
+.scrim[data-anchor="center"] {
+  background: radial-gradient(78% 62% at 50% 52%,
+    color-mix(in oklab, var(--sc-canvas) 92%, transparent) 0%,
+    color-mix(in oklab, var(--sc-canvas) 62%, transparent) 46%,
+    transparent 84%);
+}
+
+/* --------------------------------------------------------------- the map */
+.map {
+  position: fixed; z-index: var(--sc-z-chrome);
+  left: 0; top: 0; bottom: 0;
+  width: clamp(14rem, 16vw, 17.5rem);
+  display: flex; flex-direction: column; gap: var(--sc-5);
+  padding: var(--sc-5) var(--sc-4) var(--sc-5) var(--sc-5);
+  background: linear-gradient(to right,
+    color-mix(in oklab, var(--sc-canvas) 92%, transparent),
+    color-mix(in oklab, var(--sc-canvas) 40%, transparent) 78%, transparent);
+  border-right: 1px solid var(--rule);
+  font-family: var(--sc-font-mono);
+  font-size: var(--sc-t-xs);
+}
+.map__mark { margin: 0; }
+.map__name {
+  font-family: var(--sc-font-display); font-weight: 700;
+  font-size: var(--sc-t-lg); letter-spacing: var(--sc-track-snug);
+  color: var(--sc-ink);
+}
+.map__legs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; }
+.map__legs li { display: block; }
+.map__leg {
+  display: grid; grid-template-columns: 14px 1fr; align-items: center; gap: var(--sc-3);
+  line-height: 1.3;
+  width: 100%; padding: var(--sc-2) 0;
+  background: none; border: 0; border-top: 1px solid var(--rule);
+  color: var(--sc-ink-soft); font: inherit; text-align: left;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 140ms var(--sc-ease-out);
+}
+.map__legs li:last-child .map__leg { border-bottom: 1px solid var(--rule); }
+.map__leg::before {
+  content: ""; display: block; height: 2px; width: 6px;
+  background: var(--sc-ink-soft);
+  transition: width 180ms var(--sc-ease-out), background-color 180ms var(--sc-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .map__leg:hover { color: var(--sc-ink); }
+  .map__leg:hover::before { width: 14px; }
+}
+.map__leg:active { transform: translateY(1px); }
+.map__leg[aria-current="true"] { color: var(--sc-ink); }
+.map__leg[aria-current="true"]::before { width: 14px; background: var(--sc-accent); }
+
+.map__now { display: none; margin: 0; }
+.map__depth { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.map__depth-label, .map__depth-unit {
+  font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--sc-ink-soft);
+}
+.map__depth-value {
+  font-size: var(--sc-t-xl); font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--sc-accent); line-height: 1;
+}
+.map__cta {
+  display: block; text-align: center;
+  padding: var(--sc-3) var(--sc-4);
+  background: var(--sc-accent); color: var(--sc-accent-ink);
+  font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  text-decoration: none; border-radius: var(--sc-r-md); white-space: nowrap;
+  transition: transform 140ms var(--sc-ease-out), filter 140ms var(--sc-ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .map__cta:hover { filter: brightness(1.12); } }
+.map__cta:active { transform: translateY(1px) scale(0.985); }
+
+/* -------------------------------------------------------------- the copy */
+.plate {
+  background: var(--plate-bg);
+  backdrop-filter: blur(2px);
+  border-left: 1px solid var(--rule-hot);
+  padding: var(--sc-5) var(--sc-5) var(--sc-5) var(--sc-5);
+  max-width: min(38rem, 64vw);
+}
+.sc-copy--trail.plate { border-left: 0; border-right: 1px solid var(--rule-hot); }
+.sc-copy--center.plate { border-left: 0; border-top: 1px solid var(--rule-hot); }
+.plate--bare { background: none; backdrop-filter: none; border: 0; }
+
+/* Copy blocks sit clear of the map, on every anchor. */
+.sc-copy--lead.plate { left: calc(clamp(14rem, 16vw, 17.5rem) + var(--sc-5)); }
+
+.plate h1, .plate h2 { color: var(--sc-ink); margin: 0 0 var(--sc-3); }
+.plate .sc-body { font-size: var(--sc-t-base); line-height: var(--sc-leading-body); margin-bottom: var(--sc-4); }
+.kicker {
+  margin: 0 0 var(--sc-2);
+  font-family: var(--sc-font-mono); font-size: var(--sc-t-xs);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--sc-accent);
+}
+.note {
+  margin: var(--sc-4) 0 0; font-family: var(--sc-font-mono);
+  font-size: var(--sc-t-xs); color: var(--sc-ink-soft); letter-spacing: 0.02em;
+  max-width: 34ch;
+}
+.quiet {
+  margin: 0; font-family: var(--sc-font-display);
+  font-size: var(--sc-t-xl); line-height: 1.3; color: var(--sc-ink);
+  max-width: 24ch; text-wrap: balance;
+}
+.shift { margin: var(--sc-4) 0 0; font-size: var(--sc-t-sm); color: var(--sc-ink-soft); }
+.shift b { color: var(--sc-ink); font-weight: 600; }
+.risk { margin: var(--sc-4) 0 0; font-size: var(--sc-t-xs); color: var(--sc-accent); font-family: var(--sc-font-mono); max-width: 40ch; }
+.risk:empty { display: none; }
+
+.out {
+  display: inline-block; margin-top: var(--sc-4);
+  font-family: var(--sc-font-mono); font-size: var(--sc-t-xs);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--sc-ink); text-decoration: none;
+  border-bottom: 1px solid var(--sc-accent); padding-bottom: 2px;
+}
+.out[hidden] { display: none; }
+@media (hover: hover) and (pointer: fine) { .out:hover { color: var(--sc-accent); } }
+
+/* ------------------------------------------------------------- the audit */
+/* The signature move's readout. Rows arrive as the camera enters the bay and
+   the total is their running sum, so the number on screen is arithmetic the
+   reader can redo, not a value that was typed. */
+.audit {
+  margin-top: var(--sc-4);
+  font-family: var(--sc-font-mono); font-size: var(--sc-t-xs);
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--rule);
+}
+.audit--second { margin-top: var(--sc-5); }
+.audit__head {
+  display: flex; justify-content: space-between; gap: var(--sc-4);
+  padding: var(--sc-2) 0; color: var(--sc-ink-soft);
+  letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.66rem;
+  border-bottom: 1px solid var(--rule);
+}
+.audit__rows { display: block; }
+.audit__row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: var(--sc-4);
+  padding: 3px 0; color: var(--sc-ink-soft);
+  border-bottom: 1px solid color-mix(in oklab, var(--sc-ink) 6%, transparent);
+  opacity: 0; transform: translateY(3px);
+}
+.audit__row.is-in { opacity: 1; transform: none; }
+.audit__row b { color: var(--sc-ink); font-weight: 500; }
+.audit__total {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--sc-4);
+  padding-top: var(--sc-3);
+}
+.audit__total-label { color: var(--sc-ink-soft); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.66rem; }
+.audit__total-value { font-size: var(--sc-t-xl); font-weight: 600; color: var(--sc-accent); line-height: 1; }
+.audit__meta { margin-top: var(--sc-2); color: var(--sc-ink-soft); display: flex; flex-wrap: wrap; gap: var(--sc-4); }
+.audit__meta b { color: var(--sc-ink); font-weight: 500; }
+
+/* ------------------------------------------------------------ the ledger */
+/* The peak lights the whole corridor up behind this block, so the readout has
+   to be a solid instrument panel rather than a transparent one. A see-through
+   plate here put burning gantries straight through the numbers. */
+.plate--ledger {
+  background: color-mix(in oklab, var(--sc-canvas) 96%, transparent);
+  box-shadow: var(--sc-edge), 0 30px 90px -30px rgb(0 0 0 / 0.9);
+  inset-inline: auto;
+  left: calc(clamp(14rem, 16vw, 17.5rem) + var(--sc-5));
+  right: var(--sc-gutter);
+  top: 50%; translate: 0 -50%;
+  max-width: min(62rem, 78vw);
+  border-left: 1px solid var(--rule-hot);
+}
+/* A five-column table cannot fit 390px. It scrolls inside its own container
+   rather than being cut off by the stage's overflow, which is what it was. */
+.ledger-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.ledger { width: 100%; border-collapse: collapse; font-family: var(--sc-font-mono); font-variant-numeric: tabular-nums; font-size: var(--sc-t-xs); }
+.ledger th, .ledger td { text-align: right; padding: var(--sc-2) var(--sc-3); border-bottom: 1px solid var(--rule); }
+.ledger th:first-child, .ledger td:first-child { text-align: left; font-family: var(--sc-font-display); }
+.ledger thead th { color: var(--sc-ink-soft); font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.64rem; }
+.ledger tbody td { color: var(--sc-ink); }
+.ledger tbody tr { opacity: 0; }
+.ledger tbody tr.is-in { opacity: 1; }
+.ledger tbody td.dim { color: var(--sc-ink-soft); }
+.ledger tfoot td { border-top: 1px solid var(--rule-hot); border-bottom: 0; padding-top: var(--sc-3); color: var(--sc-accent); font-weight: 600; font-size: var(--sc-t-base); }
+.ledger tfoot td:first-child { color: var(--sc-ink-soft); font-weight: 400; font-size: var(--sc-t-xs); letter-spacing: 0.14em; text-transform: uppercase; }
+.excluded, .caveat { margin: var(--sc-4) 0 0; font-size: var(--sc-t-xs); color: var(--sc-ink-soft); max-width: 74ch; line-height: 1.62; }
+.excluded b { color: var(--sc-ink); font-weight: 600; }
+
+/* --------------------------------------------------------------- the end */
+/* The close is a plate mounted in the end wall, so it is bordered on every
+   side and catches light on its lip. A block with one border reads as a
+   fragment of a layout; this has to read as an object in the room. */
+.plate--end {
+  max-width: min(46rem, 80vw);
+  border: 1px solid color-mix(in oklab, var(--sc-accent) 46%, transparent);
+  background: color-mix(in oklab, var(--sc-canvas) 94%, transparent);
+  box-shadow: var(--sc-edge), 0 40px 110px -30px rgb(0 0 0 / 0.95);
+  padding: var(--sc-8) var(--sc-7);
+}
+.plate--end h2 { text-wrap: balance; }
+/* The CTA is an object in the wall, not a button floating over a photograph. */
+.wall-plate {
+  display: inline-block; margin: var(--sc-5) 0 var(--sc-4);
+  padding: var(--sc-4) var(--sc-7);
+  background: var(--sc-accent); color: var(--sc-accent-ink);
+  font-family: var(--sc-font-mono); font-weight: 600;
+  font-size: var(--sc-t-base); letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; border-radius: var(--sc-r-md);
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--sc-accent) 55%, #000),
+              0 18px 40px -12px rgb(0 0 0 / 0.8);
+  transition: transform 140ms var(--sc-ease-out), filter 140ms var(--sc-ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .wall-plate:hover { filter: brightness(1.1); } }
+.wall-plate:active { transform: translateY(2px); box-shadow: 0 0 0 color-mix(in oklab, var(--sc-accent) 55%, #000), 0 10px 26px -12px rgb(0 0 0 / 0.8); }
+.fine { margin: 0 0 var(--sc-2); font-family: var(--sc-font-mono); font-size: var(--sc-t-xs); color: var(--sc-ink-soft); }
+.fine a { color: var(--sc-ink); text-underline-offset: 3px; }
+/* Centred monospace is hard to read at length. */
+.fine--method { max-width: 62ch; margin-inline: auto; line-height: 1.6; text-align: left; }
+
+.noscript { max-width: 40rem; margin: 12vh auto; padding: 0 var(--sc-5); color: var(--sc-ink); }
+.noscript a { color: var(--sc-accent); }
+
+/* ------------------------------------------------------------- responsive */
+@media (max-width: 900px) {
+  .map {
+    left: 0; right: 0; top: auto; bottom: 0; width: auto;
+    flex-direction: row; align-items: center; gap: var(--sc-4);
+    padding: var(--sc-3) var(--sc-4);
+    border-right: 0; border-top: 1px solid var(--rule);
+    background: color-mix(in oklab, var(--sc-canvas) 92%, transparent);
+  }
+  /* The waypoint list becomes a row of ticks rather than disappearing. A
+     continuous world you cannot skip around in is a video, and hiding the map
+     on the half of visitors using a phone is the same thing as not having one.
+     Each tick keeps a 44px target and carries its name for a screen reader. */
+  .map { flex-wrap: wrap; row-gap: var(--sc-2); padding: var(--sc-2) var(--sc-4) var(--sc-3); }
+  .map__mark { display: none; }
+  .map__legs { flex: 1 0 100%; flex-direction: row; gap: 3px; }
+  .map__legs li { flex: 1 1 0; }
+  .map__leg {
+    grid-template-columns: 1fr; gap: 0; padding: 0;
+    min-height: 44px; border: 0; align-content: center;
+  }
+  .map__legs li:last-child .map__leg { border-bottom: 0; }
+  .map__leg span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .map__leg::before { width: 100%; height: 3px; }
+  .map__leg[aria-current="true"]::before { width: 100%; }
+  .map__now {
+    display: block; flex: 1 1 auto;
+    color: var(--sc-ink); letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 0.68rem;
+  }
+  .map__depth { flex: 0 0 auto; flex-direction: row; align-items: baseline; gap: var(--sc-2); }
+  .map__depth-label, .map__depth-unit { display: none; }
+  .map__depth-value { font-size: var(--sc-t-lg); }
+  .map__cta { padding: var(--sc-2) var(--sc-4); font-size: 0.68rem; }
+
+  .sc-copy--lead.plate { left: var(--sc-gutter); }
+  .plate, .plate--ledger, .plate--end { max-width: none; inset-inline: var(--sc-4); }
+  .plate--ledger { left: var(--sc-4); right: var(--sc-4); }
+  .sc-copy--lead.plate, .sc-copy--trail.plate { bottom: clamp(7.5rem, 20vh, 11rem); }
+  .sc-copy--trail.plate { text-align: left; border-right: 0; border-left: 1px solid var(--rule-hot); }
+  /* The desktop floor of --sc-t-4xl wraps a hero headline to six lines at
+     390px. Step it down one rung. */
+  .plate h1 { font-size: var(--sc-t-2xl); }
+  .ledger { font-size: 0.68rem; white-space: nowrap; min-width: 30rem; }
+  .ledger th, .ledger td { padding: var(--sc-1) var(--sc-2); }
+  .plate--ledger { top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); }
+  .excluded, .caveat { font-size: 0.68rem; line-height: 1.5; }
+  .plate--end { padding: var(--sc-6) var(--sc-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audit__row, .ledger tbody tr { opacity: 1; transform: none; }
+  .bay__bar { transform: none !important; }
+}

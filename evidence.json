@@ -1,0 +1,482 @@
+{
+  "generatedAt": "2026-08-24",
+  "countingRule": "Physical lines of authored source taken from git ls-files, so dependencies, build output and untracked scratch are excluded by construction. Machine-generated files and byte-identical duplicates are dropped and counted separately below. Test counts are what each project's own runner reported when this file was written.",
+  "repos": [
+    {
+      "id": "rutero-tdv",
+      "basis": "git ls-files",
+      "files": 409,
+      "linesTotal": 69782,
+      "linesCode": 50083,
+      "byExtension": [
+        {
+          "ext": ".ts",
+          "files": 237,
+          "lines": 37547
+        },
+        {
+          "ext": ".tsx",
+          "files": 63,
+          "lines": 17225
+        },
+        {
+          "ext": ".sql",
+          "files": 57,
+          "lines": 7927
+        },
+        {
+          "ext": ".mjs",
+          "files": 28,
+          "lines": 3769
+        },
+        {
+          "ext": ".css",
+          "files": 1,
+          "lines": 1124
+        },
+        {
+          "ext": ".swift",
+          "files": 9,
+          "lines": 660
+        },
+        {
+          "ext": ".js",
+          "files": 3,
+          "lines": 623
+        },
+        {
+          "ext": ".sh",
+          "files": 7,
+          "lines": 453
+        },
+        {
+          "ext": ".py",
+          "files": 2,
+          "lines": 365
+        },
+        {
+          "ext": ".gs",
+          "files": 1,
+          "lines": 69
+        },
+        {
+          "ext": ".html",
+          "files": 1,
+          "lines": 20
+        }
+      ],
+      "byArea": [
+        {
+          "area": "app",
+          "files": 315,
+          "lines": 57687,
+          "code": 42513
+        },
+        {
+          "area": "supabase",
+          "files": 59,
+          "lines": 8132,
+          "code": 4191
+        },
+        {
+          "area": "server",
+          "files": 15,
+          "lines": 1574,
+          "code": 1407
+        },
+        {
+          "area": "script",
+          "files": 5,
+          "lines": 849,
+          "code": 754
+        },
+        {
+          "area": "scripts",
+          "files": 5,
+          "lines": 679,
+          "code": 456
+        },
+        {
+          "area": "iOSApp",
+          "files": 5,
+          "lines": 467,
+          "code": 415
+        },
+        {
+          "area": "MacApp",
+          "files": 5,
+          "lines": 394,
+          "code": 347
+        }
+      ],
+      "excluded": {
+        "machineGenerated": 0,
+        "duplicates": 0,
+        "samples": []
+      },
+      "commits": 277,
+      "activeDays": 24,
+      "firstCommit": "2026-07-08",
+      "lastCommit": "2026-08-20",
+      "authorCount": 2,
+      "testFiles": 146,
+      "suite": {
+        "runner": "vitest",
+        "passed": 1228,
+        "total": 1228
+      },
+      "deck": null
+    },
+    {
+      "id": "cotizador-tdv",
+      "basis": "git ls-files",
+      "files": 1,
+      "linesTotal": 2353,
+      "linesCode": 2227,
+      "byExtension": [
+        {
+          "ext": ".html",
+          "files": 1,
+          "lines": 2353
+        }
+      ],
+      "byArea": [
+        {
+          "area": "(root)",
+          "files": 1,
+          "lines": 2353,
+          "code": 2227
+        }
+      ],
+      "excluded": {
+        "machineGenerated": 2,
+        "duplicates": 0,
+        "samples": [
+          "catalogo-mx.js",
+          "support.js"
+        ]
+      },
+      "commits": 1,
+      "activeDays": 1,
+      "firstCommit": "2026-08-19",
+      "lastCommit": "2026-08-19",
+      "authorCount": 1,
+      "testFiles": 0,
+      "suite": null,
+      "deck": null
+    },
+    {
+      "id": "data-triage-center",
+      "basis": "git ls-files",
+      "files": 7,
+      "linesTotal": 1555,
+      "linesCode": 1350,
+      "byExtension": [
+        {
+          "ext": ".js",
+          "files": 2,
+          "lines": 984
+        },
+        {
+          "ext": ".mjs",
+          "files": 3,
+          "lines": 255
+        },
+        {
+          "ext": ".py",
+          "files": 1,
+          "lines": 214
+        },
+        {
+          "ext": ".html",
+          "files": 1,
+          "lines": 102
+        }
+      ],
+      "byArea": [
+        {
+          "area": "(root)",
+          "files": 3,
+          "lines": 1086,
+          "code": 1006
+        },
+        {
+          "area": "scripts",
+          "files": 4,
+          "lines": 469,
+          "code": 344
+        }
+      ],
+      "excluded": {
+        "machineGenerated": 1,
+        "duplicates": 0,
+        "samples": [
+          "catalog-data.js"
+        ]
+      },
+      "commits": 6,
+      "activeDays": 2,
+      "firstCommit": "2026-07-21",
+      "lastCommit": "2026-08-06",
+      "authorCount": 1,
+      "testFiles": 0,
+      "suite": null,
+      "deck": null
+    },
+    {
+      "id": "tdv-outbound-log",
+      "basis": "git ls-files",
+      "files": 6,
+      "linesTotal": 1730,
+      "linesCode": 1431,
+      "byExtension": [
+        {
+          "ext": ".html",
+          "files": 1,
+          "lines": 921
+        },
+        {
+          "ext": ".py",
+          "files": 2,
+          "lines": 493
+        },
+        {
+          "ext": ".gs",
+          "files": 1,
+          "lines": 160
+        },
+        {
+          "ext": ".js",
+          "files": 1,
+          "lines": 111
+        },
+        {
+          "ext": ".sh",
+          "files": 1,
+          "lines": 45
+        }
+      ],
+      "byArea": [
+        {
+          "area": "public",
+          "files": 1,
+          "lines": 921,
+          "code": 815
+        },
+        {
+          "area": "(root)",
+          "files": 4,
+          "lines": 649,
+          "code": 506
+        },
+        {
+          "area": "apps-script",
+          "files": 1,
+          "lines": 160,
+          "code": 110
+        }
+      ],
+      "excluded": {
+        "machineGenerated": 1,
+        "duplicates": 0,
+        "samples": [
+          "public/support.js"
+        ]
+      },
+      "commits": 14,
+      "activeDays": 3,
+      "firstCommit": "2026-08-10",
+      "lastCommit": "2026-08-19",
+      "authorCount": 2,
+      "testFiles": 0,
+      "suite": null,
+      "deck": null
+    },
+    {
+      "id": "cotizador-farmers-fresh",
+      "basis": "git ls-files",
+      "files": 15,
+      "linesTotal": 2671,
+      "linesCode": 2179,
+      "byExtension": [
+        {
+          "ext": ".js",
+          "files": 8,
+          "lines": 1871
+        },
+        {
+          "ext": ".mjs",
+          "files": 5,
+          "lines": 644
+        },
+        {
+          "ext": ".css",
+          "files": 1,
+          "lines": 138
+        },
+        {
+          "ext": ".html",
+          "files": 1,
+          "lines": 18
+        }
+      ],
+      "byArea": [
+        {
+          "area": "(root)",
+          "files": 10,
+          "lines": 2027,
+          "code": 1680
+        },
+        {
+          "area": "tests",
+          "files": 5,
+          "lines": 644,
+          "code": 499
+        }
+      ],
+      "excluded": {
+        "machineGenerated": 1,
+        "duplicates": 0,
+        "samples": [
+          "ds.css"
+        ]
+      },
+      "commits": 24,
+      "activeDays": 4,
+      "firstCommit": "2026-08-11",
+      "lastCommit": "2026-08-14",
+      "authorCount": 1,
+      "testFiles": 5,
+      "suite": {
+        "runner": "node:test",
+        "passed": 62,
+        "total": 62
+      },
+      "deck": null
+    },
+    {
+      "id": "currents",
+      "basis": "git ls-files",
+      "files": 109,
+      "linesTotal": 20960,
+      "linesCode": 15528,
+      "byExtension": [
+        {
+          "ext": ".mjs",
+          "files": 51,
+          "lines": 10343
+        },
+        {
+          "ext": ".js",
+          "files": 44,
+          "lines": 7375
+        },
+        {
+          "ext": ".css",
+          "files": 2,
+          "lines": 1697
+        },
+        {
+          "ext": ".jsx",
+          "files": 3,
+          "lines": 394
+        },
+        {
+          "ext": ".sh",
+          "files": 3,
+          "lines": 335
+        },
+        {
+          "ext": ".html",
+          "files": 2,
+          "lines": 331
+        },
+        {
+          "ext": ".cjs",
+          "files": 1,
+          "lines": 199
+        },
+        {
+          "ext": ".sql",
+          "files": 2,
+          "lines": 147
+        },
+        {
+          "ext": ".py",
+          "files": 1,
+          "lines": 139
+        }
+      ],
+      "byArea": [
+        {
+          "area": "tools",
+          "files": 56,
+          "lines": 11016,
+          "code": 8052
+        },
+        {
+          "area": "src",
+          "files": 36,
+          "lines": 6271,
+          "code": 4588
+        },
+        {
+          "area": "styles",
+          "files": 2,
+          "lines": 1697,
+          "code": 1370
+        },
+        {
+          "area": "(root)",
+          "files": 4,
+          "lines": 598,
+          "code": 491
+        },
+        {
+          "area": "e2e",
+          "files": 4,
+          "lines": 586,
+          "code": 422
+        },
+        {
+          "area": "video",
+          "files": 4,
+          "lines": 398,
+          "code": 351
+        },
+        {
+          "area": "api",
+          "files": 1,
+          "lines": 247,
+          "code": 177
+        },
+        {
+          "area": "db",
+          "files": 2,
+          "lines": 147,
+          "code": 77
+        }
+      ],
+      "excluded": {
+        "machineGenerated": 0,
+        "duplicates": 0,
+        "samples": []
+      },
+      "commits": 183,
+      "activeDays": 12,
+      "firstCommit": "2026-08-11",
+      "lastCommit": "2026-08-23",
+      "authorCount": 1,
+      "testFiles": 30,
+      "suite": {
+        "runner": "node:test",
+        "passed": 299,
+        "total": 300
+      },
+      "deck": {
+        "cards": 735,
+        "topics": 15
+      }
+    }
+  ]
+}

@@ -1,7 +1,13 @@
 /**
- * Drift guard for the static fallbacks in index.html.
+ * Drift guard.
  *
- * index.html deliberately repeats some figures that js/data.js also owns: the
+ * Two pages now. `index.html` is the flight, and it states no figure at all:
+ * every number it shows is summed in the browser from `evidence.json`, so
+ * there is nothing on it to drift and the guard's job there is to prove that
+ * stays true. `evidence.html` is the written portfolio, and it is the page
+ * this file was originally written for.
+ *
+ * evidence.html deliberately repeats some figures that js/data.js also owns: the
  * hero headline and stat strip (so the page does not shift on load), the
  * noscript project list, and the per-project footnotes. Duplication is the
  * right trade there, but it is only safe if drift is caught mechanically —
@@ -24,7 +30,7 @@ const dataSource = read('js/data.js');
 // eslint-disable-next-line no-eval
 const P = (0, eval)(`${dataSource}\nPORTFOLIO;`);
 
-const html = read('index.html');
+const html = read('evidence.html');
 
 // og-source.html renders img/og.png, the card every link preview shows. Nothing
 // on the site displays it, no one reloads it, and it is a screenshot — so it is
@@ -40,7 +46,7 @@ const ogSource = read('og-source.html');
 // hard-part assertions run against the fallback text only.
 const fallback = (html.match(/<noscript>[\s\S]*?<\/noscript>/g) || []).join('\n');
 if (!fallback) {
-  console.error('check: index.html has no <noscript> fallback to verify');
+  console.error('check: evidence.html has no <noscript> fallback to verify');
   process.exit(1);
 }
 
@@ -56,13 +62,13 @@ const presentedPayback = Math.round((presentedBenefit / P.REPLACEMENT.juanYear1)
 
 const failures = [];
 
-/** The figure must appear in index.html, or the fallback has drifted. */
+/** The figure must appear in evidence.html, or the fallback has drifted. */
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const within = (haystack, where) => (label, needle) => {
   if (haystack.includes(needle) || haystack.includes(escape(needle))) return;
   failures.push(`${label}: ${where} is missing ${JSON.stringify(needle)}`);
 };
-const expect = within(html, 'index.html');
+const expect = within(html, 'evidence.html');
 const expectFallback = within(fallback, 'the <noscript> fallback');
 
 // The hero repeats figures that now also appear in the prose explaining which
@@ -76,7 +82,7 @@ const expectFallback = within(fallback, 'the <noscript> fallback');
 const region = (pattern, name) => {
   const found = (html.match(pattern) || [''])[0];
   if (!found) {
-    console.error(`check: index.html has no ${name} to verify`);
+    console.error(`check: evidence.html has no ${name} to verify`);
     process.exit(1);
   }
   return within(found, name);
@@ -150,7 +156,7 @@ expectOg('og tests passing', presentedTests.toLocaleString('en-US'));
 // it automatically instead of relying on someone remembering.
 for (const tag of ['og:image', 'twitter:image']) {
   const found = html.match(new RegExp(`(?:property|name)="${tag}" content="([^"]+)"`));
-  if (!found) { failures.push(`${tag}: not found in index.html`); continue; }
+  if (!found) { failures.push(`${tag}: not found in evidence.html`); continue; }
   if (!found[1].includes(`?v=${P.MEASURED_ON}`)) {
     failures.push(`${tag}: ${JSON.stringify(found[1])} is not versioned with ?v=${P.MEASURED_ON}, so the cached card will outlive this measurement`);
   }
@@ -227,7 +233,7 @@ P.HARD_PARTS.forEach((entry, index) => {
 //   crawlers, so nothing on a normal load reveals when it goes stale —
 const ldMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
 if (!ldMatch) {
-  failures.push('structured data: index.html has no ld+json block');
+  failures.push('structured data: evidence.html has no ld+json block');
 } else {
   let graph;
   try {
@@ -258,6 +264,80 @@ if (!ldMatch) {
 
 // — measurement date must be stated on the page, never a bare figure —
 expect('measurement date', P.MEASURED_ON);
+
+/* ===========================================================================
+   The flight (index.html)
+   ---------------------------------------------------------------------------
+   The written page duplicates figures and is guarded against drift. The flight
+   takes the other route: it states none, and sums them in the browser out of
+   evidence.json. That is a stronger guarantee, but only while it holds, and it
+   would be easy to "just hardcode this one" later. So the guard here is the
+   inverse of the guard above: it fails if a measured figure appears anywhere in
+   the flight's own source.
+   ========================================================================= */
+
+const flight = read('index.html');
+const flightJs = read('js/world.js') + read('js/content.js');
+const flightCss = read('css/pitwall.css');
+
+if (!existsSync(join(here, 'evidence.json'))) {
+  failures.push('evidence.json is missing: the flight has nothing to derive its figures from');
+} else {
+  const EV = JSON.parse(read('evidence.json'));
+  const live = new Map(EV.repos.filter((r) => !r.missing).map((r) => [r.id, r]));
+
+  // Every measured figure, in both the plain and the grouped spelling.
+  const forbidden = [];
+  for (const [id, r] of live) {
+    for (const n of [r.linesTotal, r.linesCode, r.commits, r.suite?.passed, r.deck?.cards]) {
+      if (typeof n === 'number' && n >= 100) forbidden.push([id, n]);
+    }
+  }
+  const totals = {
+    lines: [...live.values()].reduce((s, r) => s + r.linesTotal, 0),
+    commits: [...live.values()].reduce((s, r) => s + r.commits, 0),
+    tests: [...live.values()].reduce((s, r) => s + (r.suite?.passed || 0), 0),
+  };
+  for (const [k, n] of Object.entries(totals)) forbidden.push([`total ${k}`, n]);
+
+  for (const [label, n] of forbidden) {
+    for (const spelling of [String(n), n.toLocaleString('en-US')]) {
+      const re = new RegExp(`(^|[^\\d,.])${spelling.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\d,.]|$)`);
+      for (const [where, text] of [['index.html', flight], ['js/*.js', flightJs], ['css/pitwall.css', flightCss]]) {
+        if (re.test(text)) {
+          failures.push(`flight: ${where} contains the measured figure ${spelling} (${label}). ` +
+            'The flight must derive every figure from evidence.json, never state one.');
+        }
+      }
+    }
+  }
+
+  // The two pages have to be measuring the same repositories on the same day,
+  // or the front door and the evidence behind it quietly disagree.
+  for (const project of P.PROJECTS) {
+    const r = live.get(project.id);
+    if (!r) { failures.push(`evidence.json has no record for ${project.id}`); continue; }
+    if (r.linesTotal !== project.loc) failures.push(`${project.id}: evidence.json says ${r.linesTotal} lines, js/data.js says ${project.loc}`);
+    if ((r.commits ?? null) !== (project.commits ?? null)) failures.push(`${project.id}: evidence.json says ${r.commits} commits, js/data.js says ${project.commits}`);
+    const passed = r.suite ? r.suite.passed : null;
+    if (passed !== (project.tests ?? null)) failures.push(`${project.id}: evidence.json says ${passed} tests, js/data.js says ${project.tests}`);
+    if (project.deck && r.deck && r.deck.cards !== project.deck.cards) {
+      failures.push(`${project.id}: evidence.json says ${r.deck.cards} cards, js/data.js says ${project.deck.cards}`);
+    }
+  }
+  if (EV.generatedAt !== P.MEASURED_ON) {
+    failures.push(`evidence.json was generated ${EV.generatedAt} but js/data.js says measured ${P.MEASURED_ON}`);
+  }
+}
+
+// The deployed CSP has no unsafe-inline, so an inline <script> is dropped and
+// the page becomes a still image with no scroll track. It fails silently.
+if (/<script(?![^>]*\ssrc=)[^>]*>[\s\S]*?\S[\s\S]*?<\/script>/.test(flight)) {
+  failures.push('flight: index.html has an inline <script>, which the deployed CSP blocks');
+}
+if (!/connect-src 'self'/.test(read('vercel.json'))) {
+  failures.push("vercel.json: the flight fetches evidence.json, so CSP needs connect-src 'self'");
+}
 
 if (failures.length) {
   console.error(`check: ${failures.length} fallback(s) out of step with js/data.js\n`);

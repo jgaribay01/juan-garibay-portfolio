@@ -1,8 +1,8 @@
 /**
  * Portfolio data — single source of truth.
  *
- * Re-measured 2026-08-18 from git history and the file system. Line counts use
- * one fixed method across all seven records: authored .ts/.tsx/.js/.jsx/.py/
+ * Re-measured 2026-08-24 by `npm run measure`, from git history and the file
+ * system. Line counts use one fixed method across all six records: authored .ts/.tsx/.js/.jsx/.py/
  * .html/.css/.sql only, excluding node_modules, build output, coverage, caches,
  * third-party libraries and tool-generated files. Counting any other way moves
  * these figures by up to 3x, so the method travels with the number.
@@ -19,7 +19,7 @@
 const PORTFOLIO = (() => {
   'use strict';
 
-  const MEASURED_ON = '2026-08-22';
+  const MEASURED_ON = '2026-08-24';
 
   /** US contract developer rate, public market range 2026. Retained for the
       build-cost figures, which are no longer the page's headline argument. */
@@ -207,7 +207,7 @@ const PORTFOLIO = (() => {
       commits: 277,
       tests: 1228,
       verified:
-        '277 commits over 24 days, one author by email (git shortlog -sne); 1,228 tests passing (vitest run); 22 Aug 2026',
+        '277 commits over 24 days, one author by email (git shortlog -sne); 1,228 tests passing (vitest run); 24 Aug 2026',
       stack: ['TypeScript', 'React', 'Vite', 'Node', 'Supabase', 'Docker', 'Mapbox', 'Vercel'],
       estimatedBuildHours: 480,
       estimateBasis:
@@ -244,10 +244,13 @@ const PORTFOLIO = (() => {
       period: { from: '2026-07-29', to: '2026-08-03' },
       activeDays: 6,
       loc: 2353,
-      commits: null,
+      // One commit, and it is the initialisation, not a day's work. Recorded as
+      // 1 rather than null because that is what the repository contains and the
+      // evidence file says so; `verified` carries what the 1 actually means.
+      commits: 1,
       tests: null,
       verified:
-        'Authored on this machine, 2026-07-29 to 2026-08-03; a repo was initialised 19 Aug 2026 with a single commit, so there is no history to read; 22 Aug 2026',
+        'Authored on this machine, 2026-07-29 to 2026-08-03; the repo was initialised 19 Aug 2026 with a single commit, so there is no development history to read; 24 Aug 2026',
       stack: ['React', 'jsPDF', 'Vercel'],
       estimatedBuildHours: 90,
       estimateBasis:
@@ -282,7 +285,7 @@ const PORTFOLIO = (() => {
       commits: 6,
       tests: null,
       verified:
-        '6 commits over 2 days, sole author (git shortlog -sne); no test suite; 22 Aug 2026',
+        '6 commits over 2 days, sole author (git shortlog -sne); no test suite; 24 Aug 2026',
       stack: ['Vanilla JS', 'Google Apps Script', 'localStorage'],
       estimatedBuildHours: 40,
       estimateBasis:
@@ -319,7 +322,7 @@ const PORTFOLIO = (() => {
       commits: 14,
       tests: null,
       verified:
-        '14 commits over 3 days, one author under two emails (git shortlog -sne); no test suite; 22 Aug 2026',
+        '14 commits over 3 days, one author under two emails (git shortlog -sne); no test suite; 24 Aug 2026',
       stack: ['React', 'Vercel'],
       estimatedBuildHours: 20,
       estimateBasis: 'Single-screen scanning UI over a pre-built barcode index.',
@@ -352,7 +355,7 @@ const PORTFOLIO = (() => {
       commits: 24,
       tests: 62,
       verified:
-        '24 commits over 4 days, sole author (git shortlog -sne); 62 tests passing (node --test); 22 Aug 2026',
+        '24 commits over 4 days, sole author (git shortlog -sne); 62 tests passing (node --test); 24 Aug 2026',
       stack: ['Vanilla JS', 'Google Sheets', 'PDF export', 'Vercel'],
       estimatedBuildHours: 60,
       estimateBasis:
@@ -397,20 +400,23 @@ const PORTFOLIO = (() => {
       // worker and card content all serving. `currents.vercel.app` belongs to
       // someone else; this is the project's own alias.
       url: 'https://currents-weld.vercel.app/',
-      period: { from: '2026-08-11', to: '2026-08-22' },
-      activeDays: 11,
+      period: { from: '2026-08-11', to: '2026-08-23' },
+      activeDays: 12,
       loc: 20960,
-      commits: 182,
-      tests: 300,
+      commits: 183,
+      // 299 of 300. One test is failing as of this measurement, and the number
+      // shown is what passed, not what exists. Rounding it up to 300 is the
+      // exact thing this file refuses to do everywhere else.
+      tests: 299,
       /**
        * A product figure the hero card states, so it is measured like any
        * other. The card used to claim "95 cards across eight topic streams";
-       * the deck is 727 across 15. Nothing read the card, because the claim
-       * was baked into a WebP.
+       * the deck was 727 across 15 on 22 August and is 735 across 15 now.
+       * Nothing read the card, because the claim was baked into a WebP.
        */
-      deck: { cards: 727, topics: 15 },
+      deck: { cards: 735, topics: 15 },
       verified:
-        '182 commits over 11 days, sole author (git shortlog -sne); 300 tests passing (node --test); 22 Aug 2026',
+        '183 commits over 12 days, sole author (git shortlog -sne); 299 of 300 tests passing (node --test), one failing; 24 Aug 2026',
       stack: ['PWA', 'Service Worker', 'Vanilla JS', 'Offline-first'],
       estimatedBuildHours: 50,
       estimateBasis:

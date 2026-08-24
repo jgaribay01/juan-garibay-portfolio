@@ -33,7 +33,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, extname, relative, sep } from 'node:path';
@@ -317,6 +317,16 @@ async function measure(repo) {
   let linesTotal = 0;
   let linesCode = 0;
   const byExtension = new Map();
+  /**
+   * Lines grouped by top-level directory.
+   *
+   * The front page derives its totals from this file in the browser, and a
+   * total has to be summed from rows a reader can check by hand. Per-file rows
+   * would be the most granular evidence and the wrong thing to publish: these
+   * repositories are private, and a thousand exact paths per project is a map
+   * of somebody's business for no gain in verifiability.
+   */
+  const byArea = new Map();
   const machineGenerated = [];
 
   for (const rel of source) {
@@ -335,6 +345,13 @@ async function measure(repo) {
     bucket.files += 1;
     bucket.lines += counted.total;
     byExtension.set(ext, bucket);
+    const slash = rel.split(sep).join('/').indexOf('/');
+    const area = slash === -1 ? '(root)' : rel.split(sep).join('/').slice(0, slash);
+    const areaBucket = byArea.get(area) || { files: 0, lines: 0, code: 0 };
+    areaBucket.files += 1;
+    areaBucket.lines += counted.total;
+    areaBucket.code += counted.code;
+    byArea.set(area, areaBucket);
   }
 
   const testFiles = source.filter(isTestFile);
@@ -357,6 +374,9 @@ async function measure(repo) {
     byExtension: [...byExtension.entries()]
       .map(([ext, v]) => ({ ext, ...v }))
       .sort((a, b) => b.lines - a.lines),
+    byArea: [...byArea.entries()]
+      .map(([area, v]) => ({ area, ...v }))
+      .sort((a, b) => b.lines - a.lines),
     machineGenerated,
     duplicates,
     testFiles: testFiles.length,
@@ -374,6 +394,59 @@ async function measure(repo) {
 
 const results = [];
 for (const repo of REPOS) results.push(await measure(repo));
+
+/**
+ * Write the evidence bundle the front page reads.
+ *
+ *   node measure.mjs --evidence evidence.json
+ *
+ * The front page states no figure of its own. It loads this file and sums it in
+ * the browser, so every number on screen has exactly one copy in the codebase
+ * and the reader can download the same rows and add them up themselves. That
+ * is a stronger guarantee than the drift guard it replaces: `check.mjs` proves
+ * two copies of a number agree, and this removes the second copy.
+ *
+ * Aggregates, not per-file rows. See the note on `byArea` above.
+ */
+if (process.argv.includes('--evidence')) {
+  const outIndex = process.argv.indexOf('--evidence') + 1;
+  const out = process.argv[outIndex] && !process.argv[outIndex].startsWith('--')
+    ? process.argv[outIndex]
+    : join(here, 'evidence.json');
+  const bundle = {
+    generatedAt: new Date().toISOString().slice(0, 10),
+    countingRule:
+      'Physical lines of authored source taken from git ls-files, so dependencies, build ' +
+      'output and untracked scratch are excluded by construction. Machine-generated files ' +
+      'and byte-identical duplicates are dropped and counted separately below. Test counts ' +
+      'are what each project\'s own runner reported when this file was written.',
+    repos: results.map((r) => r.missing ? { id: r.id, missing: true } : {
+      id: r.id,
+      basis: r.basis,
+      files: r.files,
+      linesTotal: r.linesTotal,
+      linesCode: r.linesCode,
+      byExtension: r.byExtension,
+      byArea: r.byArea,
+      excluded: {
+        machineGenerated: r.machineGenerated.length,
+        duplicates: r.duplicates.length,
+        samples: [...r.machineGenerated.slice(0, 2), ...r.duplicates.slice(0, 2)],
+      },
+      commits: r.commits,
+      activeDays: r.activeDays,
+      firstCommit: r.firstCommit,
+      lastCommit: r.lastCommit,
+      authorCount: r.authors.length,
+      testFiles: r.testFiles,
+      suite: r.suite ? { runner: r.suite.runner, passed: r.suite.passed, total: r.suite.total } : null,
+      deck: r.deck,
+    }),
+  };
+  writeFileSync(out, JSON.stringify(bundle, null, 2) + '\n');
+  console.log(`evidence: ${out} (${results.filter((r) => !r.missing).length} repos)`);
+  process.exit(0);
+}
 
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(results, null, 2));

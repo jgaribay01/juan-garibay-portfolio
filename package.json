@@ -7,6 +7,7 @@
   "scripts": {
     "check": "node check.mjs",
     "test": "node check.mjs",
-    "measure": "node measure.mjs"
+    "measure": "node measure.mjs",
+    "evidence": "node measure.mjs --evidence evidence.json"
   }
 }
