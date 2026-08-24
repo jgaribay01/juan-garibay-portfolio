@@ -72,6 +72,70 @@
   border: 1px solid color-mix(in oklab, var(--sc-accent) 60%, transparent);
   box-shadow: 0 0 0 1px rgb(0 0 0 / 0.9), 0 30px 90px -20px rgb(0 0 0 / 0.95);
 }
+/* The wall each frame is bolted to. Sits just behind the bezel and is faded
+   hard, because it is a surface for the frame to sit on and not a subject. */
+.bay__wall {
+  position: absolute;
+  background: url("../img/corridor-panel.webp") center / 42% auto repeat;
+  opacity: 0.5;
+  filter: brightness(0.42) contrast(1.1);
+  mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 38%, transparent 86%);
+}
+
+/* The surface the corridor ends at. */
+.endwall__face {
+  position: absolute;
+  background: url("../img/endwall.webp") center / cover no-repeat;
+  filter: brightness(0.9);
+}
+
+/* The five application screens sit in a machined bezel. The frame is the image;
+   the screenshot is inset into its opening at percentages measured off that
+   image rather than eyeballed. Border, padding and shadow all come off, because
+   the asset already has them and drawn ones would double up. */
+.bay__panel--framed {
+  padding: 0;
+  border: 0;
+  background: url("../img/bay-housing.webp") center / 100% 100% no-repeat;
+  box-shadow: 0 30px 90px -20px rgb(0 0 0 / 0.95);
+}
+/* Doubled class on purpose. `.bay__panel--framed img` and `.bay__panel img`
+   are both one class plus one element, so they tie on specificity and the one
+   written later wins. The base rule sets width and height to 100% and is
+   written later, so the screenshot took the whole frame while still honouring
+   the left and top set here: it landed both oversized and offset. */
+.bay__panel.bay__panel--framed img {
+  position: absolute;
+  left: 16.73%;
+  top: 22.14%;
+  width: 66.91%;
+  height: 56.33%;
+}
+.bay__panel.bay__panel--framed::after {
+  /* The frame supplies its own lip and grade, so only the tint stays. */
+  box-shadow: none;
+  background: linear-gradient(155deg,
+    color-mix(in oklab, var(--sc-accent) 10%, transparent) 0%,
+    transparent 46%,
+    color-mix(in oklab, var(--sc-canvas) 42%, transparent) 100%);
+}
+
+/* Suspended dust, screen-blended so the plate's black ground drops out. */
+.dust {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none; overflow: hidden;
+  mix-blend-mode: screen;
+}
+.dust i {
+  position: absolute; inset: -30%;
+  display: block;
+  background: url("../img/dust.webp") repeat;
+  background-size: 1180px 1180px;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+  opacity: 0;
+}
+
 /* Five of the six screens are light-UI applications. Dropped straight onto a
    black corridor they read as blown-out white slabs, so they are graded down to
    sit in the room rather than float over it. */
@@ -420,11 +484,17 @@
 /* The close is a plate mounted in the end wall, so it is bordered on every
    side and catches light on its lip. A block with one border reads as a
    fragment of a layout; this has to read as an object in the room. */
+/* The recess in the end wall is the frame now, so the block does not draw one:
+   a bordered plate inside a lit recess is two frames arguing. The ground stays,
+   because type over a photographed wall needs somewhere to sit. */
 .plate--end {
   max-width: min(46rem, 80vw);
-  border: 1px solid color-mix(in oklab, var(--sc-accent) 46%, transparent);
-  background: color-mix(in oklab, var(--sc-canvas) 94%, transparent);
-  box-shadow: var(--sc-edge), 0 40px 110px -30px rgb(0 0 0 / 0.95);
+  border: 0;
+  background: radial-gradient(120% 100% at 50% 50%,
+    color-mix(in oklab, var(--sc-canvas) 88%, transparent) 0%,
+    color-mix(in oklab, var(--sc-canvas) 74%, transparent) 62%,
+    transparent 100%);
+  box-shadow: none;
   padding: var(--sc-8) var(--sc-7);
 }
 .plate--end h2 { text-wrap: balance; }
@@ -587,5 +657,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .audit__row, .ledger tbody tr, .hard-item { opacity: 1; transform: none; }
+  /* Drifting motes are decoration and carry no meaning, so they go entirely. */
+  .dust { display: none; }
   .bay__bar { transform: none !important; }
 }

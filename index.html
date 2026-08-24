@@ -186,6 +186,12 @@
   <div data-sc-world>
     <canvas id="corridor" aria-hidden="true"></canvas>
 
+    <!-- Dust, at two depths. Screen-blended so the plate's black ground drops
+         out and only the motes survive. It is the cheapest depth on the page:
+         geometry alone reads as a diagram, and a corridor with something
+         suspended in it reads as a place. -->
+    <div class="dust" aria-hidden="true"><i data-dust="0"></i><i data-dust="1"></i></div>
+
     <!-- The CSS 3D scene. Decorative: every fact it carries is stated in the
          copy layer as real text, so a reader who never sees it loses nothing. -->
     <div class="scene" aria-hidden="true">

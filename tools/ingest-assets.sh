@@ -50,17 +50,30 @@ find_src() {
 
 dims() { ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$1"; }
 
-# Paint out the corner mark. The box is sized from the image so it holds at any
-# resolution, and it is generous: a little extra painted corner costs nothing,
-# a sliver of leftover mark costs the whole asset.
+# Paint out the corner mark.
+#
+# The box is measured, not guessed. Isolated against the black surround of the
+# bezel plate the mark is exactly 48x48 at a 96px inset from both the right and
+# the bottom edge, and that holds across every image and both aspect ratios the
+# generator returned (1408x768, 1312x816, 1600x672): the predicted box is
+# brighter than a control box beside it in all of them. So the inset is
+# absolute, not proportional, and an earlier 12%-of-height box would have
+# missed the top of the mark on the taller plates.
+#
+# MARK_PAD adds a margin on every side. A little extra painted corner costs
+# nothing; a sliver of leftover mark costs the whole asset.
+MARK_SIZE=48
+MARK_INSET=96
+MARK_PAD=6
+
 unmark() {
-  local in="$1" out="$2" w h bw bh
+  local in="$1" out="$2" w h bx by bw
   IFS=x read -r w h < <(dims "$in")
-  bw=$(( w * 12 / 100 )); bh=$(( h * 12 / 100 ))
-  [ "$bw" -lt 60 ] && bw=60
-  [ "$bh" -lt 60 ] && bh=60
+  bw=$(( MARK_SIZE + MARK_PAD * 2 ))
+  bx=$(( w - MARK_INSET - MARK_SIZE - MARK_PAD ))
+  by=$(( h - MARK_INSET - MARK_SIZE - MARK_PAD ))
   ffmpeg -y -v error -i "$in" \
-    -vf "delogo=x=$((w-bw-8)):y=$((h-bh-8)):w=$bw:h=$bh:show=0" "$out"
+    -vf "delogo=x=$bx:y=$by:w=$bw:h=$bw:show=0" "$out"
 }
 
 # Seamless by construction: mirror right, mirror down. Opposite edges are then
@@ -95,7 +108,39 @@ for spec in "corridor-panel:tile:1024:82" "dust:tile:1024:78"; do
   made=$((made+1))
 done
 
-for spec in "endwall:1600:80" "bay-housing:1200:84" "og-plate:1600:80"; do
+# The bezel arrives centred in a large black field, so most of the file is
+# nothing. Cropped to the frame itself the opening becomes 67% of the asset
+# instead of 50%, which means a panel does not have to double in world size to
+# keep its screenshot the same size on screen.
+#
+# Measured on the cleaned 1200x746 render: frame at 153,38 sized 892x666, and
+# the opening inside it 597x376 at 149,146 relative to that crop. The opening's
+# aspect is 1.588 against the 1.600 of the screenshots, a 0.75% difference, so
+# nothing is stretched to fit.
+bezel() {
+  local src="$1"
+  unmark "$src" "$TMP/bez-clean.png"
+  local w h sx sy sw sh
+  IFS=x read -r w h < <(dims "$TMP/bez-clean.png")
+  sx=$(( w * 153 / 1200 )); sy=$(( h * 38 / 746 ))
+  sw=$(( w * 892 / 1200 )); sh=$(( h * 666 / 746 ))
+  ffmpeg -y -v error -i "$TMP/bez-clean.png" \
+    -vf "crop=$sw:$sh:$sx:$sy,scale=1100:-2:flags=lanczos" "$TMP/bez-land.png"
+  cwebp -quiet -q 84 "$TMP/bez-land.png" -o "$OUT/bay-housing.webp"
+  # No portrait variant. One was generated for Currents before it became clear
+  # that a phone bolted into a bulkhead is a lie about what Currents is, and
+  # that the portrait opening would crop the screenshot. It shipped 104 KB that
+  # nothing referenced.
+}
+
+if src="$(find_src bay-housing)"; then
+  bezel "$src"
+  made=$((made+1))
+else
+  echo "  skip bay-housing (not found)"
+fi
+
+for spec in "endwall:1600:80" "og-plate:1600:80"; do
   IFS=: read -r name width q <<< "$spec"
   src="$(find_src "$name")" || { echo "  skip $name (not found)"; continue; }
   unmark "$src" "$TMP/$name-clean.png"

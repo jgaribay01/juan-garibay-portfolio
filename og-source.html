@@ -35,6 +35,16 @@
         -webkit-font-smoothing: antialiased;
       }
 
+      /* A real corridor behind, and the CSS frames on top of it. The drawn
+         frames stay: they are what ties the card to the page, which is built
+         out of exactly that shape. */
+      .plate {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        opacity: 0.72;
+      }
+
       /* The corridor, in CSS. Nested frames receding to a vanishing point set
          right of centre, exactly like the page: the type holds the left. */
       .corridor { position: absolute; inset: 0; overflow: hidden; }
@@ -121,6 +131,7 @@
     </style>
   </head>
   <body>
+    <img class="plate" src="img/og-plate.webp" alt="" />
     <div class="corridor" aria-hidden="true">
       <i style="width:1560px;height:980px;margin-left:300px;opacity:0.10"></i>
       <i style="width:1180px;height:742px;margin-left:300px;opacity:0.16"></i>

@@ -180,12 +180,26 @@ const PANEL_AT = 0.94;
 /** Lateral standoff, on the opposite side from the copy. */
 const PANEL_X = 620;
 
+/**
+ * Panel geometry, in world units.
+ *
+ * For the five application screens this is the size of the FRAME, not of the
+ * screenshot: the bezel is the asset, and the screenshot is inset into its
+ * opening by the percentages measured off the image itself (16.73% / 22.14%,
+ * 66.91% x 56.33%). The frame's own aspect is 1100x822, so every framed entry
+ * holds that ratio and the opening inside it lands at 1.59, which is what the
+ * screenshots already are.
+ *
+ * Currents is not framed. It is a phone, and a phone bolted into a bulkhead is
+ * a lie about what it is; the portrait crop would also cut the screenshot.
+ */
+const FRAME_ASPECT = 1100 / 822;
 const SHAPE = {
-  'rutero-tdv':              { w: 820, h: 512 },
-  'cotizador-tdv':           { w: 760, h: 474 },
-  'cotizador-farmers-fresh': { w: 620, h: 474 },
-  'data-triage-center':      { w: 780, h: 487 },
-  'tdv-outbound-log':        { w: 720, h: 450 },
+  'rutero-tdv':              { w: 900, h: 673, framed: true },
+  'cotizador-tdv':           { w: 840, h: 628, framed: true },
+  'cotizador-farmers-fresh': { w: 720, h: 538, framed: true },
+  'data-triage-center':      { w: 860, h: 643, framed: true },
+  'tdv-outbound-log':        { w: 800, h: 598, framed: true },
   currents:                  { w: 285, h: 613 },
 };
 
@@ -206,8 +220,20 @@ function buildBays() {
     el.className = 'bay';
     el.dataset.z = String(z);
 
+    // A section of wall behind the frame. Without it a bezel hangs in mid-air,
+    // which is the one thing a bolted frame cannot plausibly do.
+    if (shape.framed) {
+      const wall = document.createElement('div');
+      wall.className = 'bay__wall';
+      wall.style.cssText =
+        `width:${Math.round(shape.w * 1.9)}px;height:${Math.round(shape.h * 1.75)}px;` +
+        `left:${Math.round(-shape.w * 0.95)}px;top:${Math.round(-shape.h * 0.875)}px;` +
+        `transform:rotateY(${rot}deg) translateZ(-14px)`;
+      el.append(wall);
+    }
+
     const panel = document.createElement('div');
-    panel.className = 'bay__panel';
+    panel.className = shape.framed ? 'bay__panel bay__panel--framed' : 'bay__panel';
     panel.style.cssText =
       `width:${shape.w}px;height:${shape.h}px;left:${-shape.w / 2}px;top:${-shape.h / 2}px;` +
       `transform:rotateY(${rot}deg)`;
@@ -241,6 +267,20 @@ function buildBays() {
     bayEls.push({ el, z, panel: true });
   });
 
+  // The end wall. The shader still draws its own terminal plate behind this,
+  // which is what shows before the image has decoded and under reduced motion;
+  // this is the surface the reader actually arrives at.
+  const wall = document.createElement('div');
+  wall.className = 'bay endwall';
+  wall.dataset.z = String(END_Z - 40);
+  const face = document.createElement('div');
+  face.className = 'endwall__face';
+  face.style.cssText = `width:3200px;height:1744px;left:-1600px;top:-872px`;
+  wall.append(face);
+  wall.style.transform = `translate3d(0,0,${-(END_Z - 40)}px)`;
+  cam.append(wall);
+  bayEls.push({ el: wall, z: END_Z - 40, far: 5200 });
+
   // Struts down the whole corridor. They are what makes the travel legible:
   // without something passing at a fixed interval, a fly-through has no speed.
   for (let z = 600; z < END_Z; z += 700) {
@@ -255,6 +295,27 @@ function buildBays() {
     s.style.transform = `translate3d(0,0,${-z}px)`;
     cam.append(s);
     bayEls.push({ el: s, z, strut: true });
+  }
+}
+
+/* ---------------------------------------------------------------- the dust */
+/* Two layers at different rates. Each cycles a scale as the camera advances,
+   so motes appear to pass rather than slide, and the two are half a cycle out
+   of phase so the loop never lands on both at once. */
+const dustLayers = [];
+function buildDust() {
+  document.querySelectorAll('[data-dust]').forEach((el, i) => {
+    dustLayers.push({ el, phase: i * 0.5, rate: i === 0 ? 0.00042 : 0.00026 });
+  });
+}
+function runDust(z) {
+  for (const d of dustLayers) {
+    const t = (z * d.rate + d.phase) % 1;
+    const scale = 1 + t * 0.9;
+    const fade = Math.sin(t * Math.PI);
+    d.el.style.transform = `scale(${scale.toFixed(3)})`;
+    // 0.55 read as snowfall. Dust should be noticed only once.
+    d.el.style.opacity = (fade * 0.16).toFixed(3);
   }
 }
 
@@ -320,6 +381,11 @@ void main() {
       float m = mod(floor(zk / GAP + 0.5), 4.0);
       float major = 1.0 - step(0.5, m);
       float fog = exp(-te * 0.00052);
+      // Rings stop before the end wall. Arriving, the nearest gantry sits a
+      // few metres ahead and its frame is then so large that only its top and
+      // bottom edges cross the screen: two hard orange bars that read as page
+      // furniture rather than as a passing structure.
+      fog *= smoothstep(uEnd, uEnd - 900.0, zk);
 
       vec3 c = mix(vec3(0.30, 0.44, 0.60), uAccent, 0.25 + major * 0.6 + uSurge * 0.7);
       float a = frame * fog * (0.55 + major * 0.45);
@@ -360,8 +426,12 @@ void main() {
       float plate = band(abs(q.x), -1.0, 820.0) * band(abs(q.y), -1.0, 500.0);
       float inner = band(abs(q.x), -1.0, 796.0) * band(abs(q.y), -1.0, 476.0);
       float grid = max(rib(q.x, 150.0, 1.0), rib(q.y, 150.0, 1.0)) * 0.10;
-      vec3 wall = mix(uCanvas, vec3(0.13, 0.16, 0.21), plate) + vec3(grid * 1.6) * plate;
-      wall += uAccent * (plate - inner) * 1.8;
+      // Plain and dark. The lit frame used to be drawn here, and now that a
+      // real surface is mounted at this depth the two stacked: an orange band
+      // across the top and bottom of the image that belonged to neither. What
+      // is left is the fallback that shows before the image decodes and under
+      // reduced motion, where it is the only end wall there is.
+      vec3 wall = mix(uCanvas, vec3(0.10, 0.12, 0.16), plate) + vec3(grid) * plate;
       float fog = 1.0 - exp(-te * 0.00046);
       shell = mix(mix(shell, wall, plate * 0.98 + 0.02), uCanvas, clamp(fog, 0.0, 1.0));
     }
@@ -770,17 +840,19 @@ function frame() {
 
   vp += (vpTarget - vp) * (reduce ? 1 : 0.04);
   scene.style.perspectiveOrigin = (vp * 100).toFixed(2) + '% 50%';
+  if (!reduce) runDust(camZ);
   cam.style.transform = `translate3d(${(-swayX * 0.25).toFixed(2)}px, ${(-swayY * 0.25).toFixed(2)}px, ${camZ.toFixed(1)}px)`;
 
   for (const b of bayEls) {
     const d = b.z - camZ;
-    const on = d > 30 && d < 3600;
+    const on = d > 30 && d < (b.far ? b.far + 700 : 3600);
     if (on !== b.on) { b.on = on; b.el.style.visibility = on ? 'visible' : 'hidden'; }
     if (on) {
       // Fade at BOTH ends. Only the far end was faded on the first cut, so a
       // panel about to pass the camera filled half the frame with a blurred
       // fragment of a screenshot behind the copy.
-      const far = Math.min(1, Math.max(0, 1 - (d - 2900) / 700));
+      const farStart = b.far || 2900;
+      const far = Math.min(1, Math.max(0, 1 - (d - farStart) / 700));
       const near = Math.min(1, Math.max(0, (d - 40) / 300));
       b.el.style.opacity = String(far * near);
       // Five of the six screens are light-UI applications. A fixed grade that
@@ -950,6 +1022,7 @@ async function boot() {
 
   buildMap();
   wireCopy();
+  buildDust();
   buildJudgement();
   buildLedger();
   buildBays();
