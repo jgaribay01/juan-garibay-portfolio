@@ -140,9 +140,14 @@ if (P.PROJECTS.some((p) => p.name === P.EXCLUDED.name)) {
 
 // — the social card, whose figures live only inside an image —
 const expectOg = within(ogSource, 'og-source.html (regenerate img/og.png after fixing)');
-expectOg('og systems count', `>${systems}<`);
+// The card counts every system the flight shows, including the personal one,
+// because that is the number in its headline. It used to count only the five
+// built for the business, which meant the preview and the page it links to
+// disagreed about how many systems there are.
+expectOg('og systems count', `>${P.PROJECTS.length}<`);
 expectOg('og benefit', usd(presentedBenefit));
-expectOg('og cash', usd(P.BENEFIT.cashAnnual));
+const presentedLines = P.PROJECTS.reduce((sum, p) => sum + (p.loc ?? 0), 0);
+expectOg('og lines of source', presentedLines.toLocaleString('en-US'));
 
 // The card's headline test figure is the sum across the systems shown. It used
 // to be one project's count, which quietly became wrong the moment a second
@@ -330,11 +335,73 @@ if (!existsSync(join(here, 'evidence.json'))) {
   }
 }
 
-// The deployed CSP has no unsafe-inline, so an inline <script> is dropped and
-// the page becomes a still image with no scroll track. It fails silently.
-if (/<script(?![^>]*\ssrc=)[^>]*>[\s\S]*?\S[\s\S]*?<\/script>/.test(flight)) {
-  failures.push('flight: index.html has an inline <script>, which the deployed CSP blocks');
+// The deployed CSP has no unsafe-inline, so an inline EXECUTABLE <script> is
+// dropped and the page becomes a still image with no scroll track. It fails
+// silently, which is how ScrollCraft.mount nearly shipped inline.
+//
+// A data block is not a script. `type="application/ld+json"` carries no
+// executable code, browsers do not evaluate it, and script-src does not apply:
+// verified against production, where evidence.html has served one under this
+// exact header with no violation reported. Blocking it here would have cost
+// the front page its structured data for nothing.
+const DATA_BLOCK = /type\s*=\s*["'](application\/ld\+json|application\/json|text\/template)["']/i;
+for (const tag of flight.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || []) {
+  const open = tag.slice(0, tag.indexOf('>') + 1);
+  if (/\ssrc\s*=/.test(open)) continue;          // external, allowed by 'self'
+  if (DATA_BLOCK.test(open)) continue;            // data, not code
+  if (!/>\s*\S/.test(tag.slice(tag.indexOf('>')))) continue;  // empty
+  failures.push(`flight: index.html has an inline executable <script>, which the deployed CSP blocks — ${open.slice(0, 60)}`);
 }
+// The flight is the page people share. Losing its card is invisible from the
+// page itself and only shows up in somebody else's chat window.
+const SOCIAL = [
+  ['canonical', /<link rel="canonical" href="[^"]+"/],
+  ['og:title', /property="og:title"/],
+  ['og:description', /property="og:description"/],
+  ['og:image', /property="og:image"/],
+  ['twitter:card', /name="twitter:card"/],
+  ['structured data', /<script type="application\/ld\+json">/],
+];
+for (const [name, re] of SOCIAL) {
+  if (!re.test(flight)) failures.push(`flight: index.html has no ${name}, so a shared link renders as a bare URL`);
+}
+// img/ is immutable for a year, so the card's URL has to move when the card does.
+for (const tag of ['og:image', 'twitter:image']) {
+  const found = flight.match(new RegExp(`(?:property|name)="${tag}" content="([^"]+)"`));
+  if (!found) { failures.push(`flight: ${tag} is missing`); continue; }
+  if (!found[1].includes(`?v=${P.MEASURED_ON}`)) {
+    failures.push(`flight: ${tag} is not versioned with ?v=${P.MEASURED_ON}, so the cached card outlives the measurement`);
+  }
+}
+// The ld+json names every system and links it. That is a second copy of prose
+// the page already owns, so it is checked against the file it renders from.
+{
+  const ld = flight.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  if (ld) {
+    let graph = null;
+    try { graph = JSON.parse(ld[1]); } catch (error) { failures.push(`flight: ld+json does not parse — ${error.message}`); }
+    if (graph) {
+      // Only the SYSTEMS block. Reading the whole file also picks up
+      // MONEY.excluded.name, which is the system the page deliberately does
+      // not render, and the guard then demanded it appear in the ld+json.
+      const source = read('js/content.js');
+      const content = source.slice(source.indexOf('export const SYSTEMS'), source.indexOf('export const MONEY'));
+      const list = (graph['@graph'] || []).find((n) => n['@type'] === 'ItemList');
+      const listed = (list?.itemListElement || []).map((e) => e.item);
+      const names = [...content.matchAll(/\n    name: '((?:[^'\\]|\\.)*)'/g)].map((m) => m[1].replace(/\\'/g, "'"));
+      for (const n of names) {
+        if (!listed.some((i) => i.name === n)) failures.push(`flight: ld+json is missing "${n}", which js/content.js renders`);
+      }
+      for (const i of listed) {
+        if (!names.includes(i.name)) failures.push(`flight: ld+json lists "${i.name}", which is not in js/content.js`);
+      }
+      if (list && list.numberOfItems !== names.length) {
+        failures.push(`flight: ld+json says ${list.numberOfItems} systems, js/content.js has ${names.length}`);
+      }
+    }
+  }
+}
+
 if (!/connect-src 'self'/.test(read('vercel.json'))) {
   failures.push("vercel.json: the flight fetches evidence.json, so CSP needs connect-src 'self'");
 }
