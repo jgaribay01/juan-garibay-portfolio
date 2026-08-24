@@ -21,7 +21,7 @@
  * mean: these repositories are private, so the page is not querying GitHub. It
  * is doing the arithmetic in front of you on evidence it ships.
  */
-import { SYSTEMS, MONEY, CONTACT, EVIDENCE_PAGE } from './content.js';
+import { SYSTEMS, JUDGEMENT, MONEY, CONTACT, EVIDENCE_PAGE } from './content.js';
 
 const root = document.querySelector('[data-sc-mode="worldflight"]');
 const scene = document.querySelector('.scene');
@@ -36,16 +36,17 @@ const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
    second copy of a fact, it is the same authored number the engine reads, and
    `assertLegs` below fails loudly if the two ever disagree. */
 const LEGS = [
-  { key: 'arrival',   w: 1.1, label: 'Arrival',        anchor: 'lead'   },
-  { key: 'rutero',    w: 1.5, label: 'Rutero TDV',     anchor: 'trail', id: 'rutero-tdv' },
-  { key: 'cotizador', w: 1.1, label: 'Cotizador TDV',  anchor: 'lead',  id: 'cotizador-tdv' },
-  { key: 'ff',        w: 1.2, label: 'Farmers Fresh',  anchor: 'trail', id: 'cotizador-farmers-fresh' },
-  { key: 'dtc',       w: 1.1, label: 'Data Triage',    anchor: 'lead',  id: 'data-triage-center' },
-  { key: 'outbound',  w: 1.1, label: 'Outbound Log',   anchor: 'trail', id: 'tdv-outbound-log' },
-  { key: 'currents',  w: 1.3, label: 'Currents',       anchor: 'lead',  id: 'currents' },
-  { key: 'dark',      w: 0.8, label: 'Dark stretch',   anchor: 'center' },
+  { key: 'arrival',   w: 1.0, label: 'Arrival',        anchor: 'lead'   },
+  { key: 'rutero',    w: 1.3, label: 'Rutero TDV',     anchor: 'trail', id: 'rutero-tdv' },
+  { key: 'cotizador', w: 1.0, label: 'Cotizador TDV',  anchor: 'lead',  id: 'cotizador-tdv' },
+  { key: 'ff',        w: 1.1, label: 'Farmers Fresh',  anchor: 'trail', id: 'cotizador-farmers-fresh' },
+  { key: 'dtc',       w: 1.0, label: 'Data Triage',    anchor: 'lead',  id: 'data-triage-center' },
+  { key: 'outbound',  w: 1.0, label: 'Outbound Log',   anchor: 'trail', id: 'tdv-outbound-log' },
+  { key: 'currents',  w: 1.1, label: 'Currents',       anchor: 'lead',  id: 'currents' },
+  { key: 'dark',      w: 0.7, label: 'Dark stretch',   anchor: 'center' },
+  { key: 'judgement', w: 1.8, label: 'The hard parts', anchor: 'lead'   },
   { key: 'ledger',    w: 2.6, label: 'The ledger',     anchor: 'lead'   },
-  { key: 'end',       w: 1.0, label: 'End wall',       anchor: 'center' },
+  { key: 'end',       w: 1.2, label: 'End wall',       anchor: 'center' },
 ];
 
 /** World px travelled per viewport-height of scroll. One pace, everywhere:
@@ -547,6 +548,35 @@ function runAudit(a, p) {
   }
 }
 
+/* ----------------------------------------------------------- the judgement */
+
+let judgement = null;
+
+function buildJudgement() {
+  const ol = document.getElementById('hard-list');
+  if (!ol) return;
+  JUDGEMENT.forEach((h) => {
+    const li = document.createElement('li');
+    li.className = 'hard-item';
+    li.innerHTML =
+      `<p class="hard-item__where">${h.system}</p>` +
+      `<h3 class="hard-item__title">${h.title}</h3>` +
+      `<p class="hard-item__line">${h.line}</p>` +
+      `<p class="hard-item__evidence">${h.evidence.map((e) => `<code>${e}</code>`).join('')}</p>`;
+    ol.append(li);
+  });
+  judgement = { items: [...ol.children], shown: -1 };
+}
+
+function runJudgement(p) {
+  if (!judgement) return;
+  const fill = reduce ? (p > 0 ? 1 : 0) : Math.max(0, Math.min(1, (p - 0.06) / 0.62));
+  const want = Math.round(fill * judgement.items.length);
+  if (want === judgement.shown) return;
+  judgement.items.forEach((el, i) => el.classList.toggle('is-in', i < want));
+  judgement.shown = want;
+}
+
 /* -------------------------------------------------------------- the ledger */
 
 let ledger = null;
@@ -588,6 +618,26 @@ function buildLedger() {
   foot.append(tr);
   foot.style.opacity = '0';
 
+  // Three things one column cannot say. Every figure here is derived from the
+  // rows above or quoted from the source document and labelled as such.
+  const cash = rows.reduce((sum, r) => sum + (r.sys.money?.cashUsd || 0), 0);
+  const freed = totals.money - cash;
+  const earns = rows.filter((r) => r.sys.money).length;
+  document.getElementById('ledger-notes').innerHTML = [
+    `<li><b>${usd(cash)}</b> of that is cash: fuel, wear, and shelf licences not bought. ` +
+      `The other <b>${usd(freed)}</b> is freed hours, which are not money until somebody redeploys them.</li>`,
+    // Two different sixes. The source document's six are the five here that
+    // earn plus the one it excludes; this table's six rows are those five plus
+    // my own build. Saying "six against six" made the sentence meaningless.
+    `<li>The source document carries a range across <b>${MONEY.range.systems}</b> systems: the ` +
+      `${earns} here that earn, plus the one with no row. <b>${usd(MONEY.range.conservative)}</b> ` +
+      `conservative, <b>${usd(MONEY.range.base)}</b> base, <b>${usd(MONEY.range.optimistic)}</b> ` +
+      `optimistic. The ${earns} here sum to ${usd(totals.money)}.</li>`,
+    `<li>Building all of it cost <b>${usd(MONEY.spend.actualUsd)}</b> of tooling, one month of ` +
+      `${MONEY.spend.label}. The same usage priced at published API list rates would have been ` +
+      `<b>${usd(MONEY.spend.apiListEquivalentUsd)}</b>.</li>`,
+  ].join('');
+
   const pay = Math.round((totals.money / MONEY.replacementYear1) * 100);
   // Counted, not typed. "five systems" and "the sixth row" were spelled out in
   // this sentence, so adding or removing a project would have left the prose
@@ -613,7 +663,7 @@ function buildLedger() {
     rows, foot, shown: -1,
     // The reasoning arrives AFTER the arithmetic. Rendered up front, these two
     // paragraphs put the conclusion on screen while the table was still empty.
-    after: [document.getElementById('excluded'), document.getElementById('caveat')],
+    after: [document.getElementById('ledger-notes'), document.getElementById('excluded'), document.getElementById('caveat')],
   };
   ledger.after.forEach((el) => { el.style.opacity = '0'; el.style.transition = 'opacity 320ms var(--sc-ease-out)'; });
 }
@@ -633,6 +683,48 @@ function runLedger(p) {
     ledger.reasoning = reasoning;
     ledger.after.forEach((el) => { el.style.opacity = reasoning; });
   }
+}
+
+/* -------------------------------------------------------------- telemetry */
+/**
+ * Does anyone reach the ledger?
+ *
+ * The page argues for measuring rather than assuming, and measured nothing
+ * about itself. These are the few moments worth knowing about, sent through
+ * Vercel Web Analytics, which is cookieless and same-origin. If the script is
+ * not loaded — it is not, until Web Analytics is enabled on the project — every
+ * call here is a no-op. Nothing is stored, nothing is sent, and the page does
+ * not care either way.
+ */
+const marked = new Set();
+function mark(name, detail) {
+  if (marked.has(name)) return;
+  marked.add(name);
+  try { window.va?.('event', { name, ...detail }); } catch (e) {}
+}
+
+let deepestLeg = 0;
+function recordProgress(k, leg) {
+  if (k > deepestLeg) deepestLeg = k;
+  if (leg.key === 'judgement') mark('reached-judgement');
+  if (leg.key === 'ledger') mark('reached-ledger');
+  if (leg.key === 'end') mark('reached-end');
+}
+
+function wireTelemetry() {
+  document.getElementById('cta')?.addEventListener('click', () => mark('email-clicked', { from: 'end-wall' }));
+  document.querySelector('.map__cta')?.addEventListener('click', () => mark('email-clicked', { from: 'rail' }));
+  document.querySelector('[download]')?.addEventListener('click', () => mark('evidence-downloaded'));
+  document.getElementById('evidence-link')?.addEventListener('click', () => mark('evidence-page-opened'));
+  document.getElementById('map-legs')?.addEventListener('click', (e) => {
+    if (e.target.closest('.map__leg')) mark('map-used');
+  });
+  // Where they stopped. One event, on the way out, naming the furthest place
+  // reached rather than anything about who reached it.
+  addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'hidden') return;
+    try { window.va?.('event', { name: 'left', at: LEGS[deepestLeg]?.key || 'arrival' }); } catch (e) {}
+  }, { once: true });
 }
 
 /* ------------------------------------------------------------------ frame */
@@ -749,6 +841,7 @@ function frame() {
   }
 
   for (const a of audits) runAudit(a, a.leg === k ? local : (k > a.leg ? 1 : 0));
+  runJudgement(k === AT.judgement ? local : (k > AT.judgement ? 1 : 0));
   runLedger(k === AT.ledger ? local : (k > AT.ledger ? 1 : 0));
 
   const running = audits.reduce((s, a) => s + a.sum, 0);
@@ -758,6 +851,7 @@ function frame() {
     curLeg = k;
     scrim.dataset.anchor = leg.anchor;
     vpTarget = VP[leg.anchor];
+    recordProgress(k, leg);
     mapButtons().forEach((b) => b.setAttribute('aria-current', String(+b.dataset.leg === k)));
     // On a phone the waypoint list collapses to ticks, so the name of the
     // place you are in has to be stated somewhere. A map you cannot read is
@@ -856,10 +950,12 @@ async function boot() {
 
   buildMap();
   wireCopy();
+  buildJudgement();
   buildLedger();
   buildBays();
   wireEnd();
   wireFocus();
+  wireTelemetry();
 
   if (!initGL()) {
     // No WebGL: the corridor is gone, the panels and every number are not.

@@ -352,6 +352,66 @@ for (const tag of flight.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || []) {
   if (!/>\s*\S/.test(tag.slice(tag.indexOf('>')))) continue;  // empty
   failures.push(`flight: index.html has an inline executable <script>, which the deployed CSP blocks — ${open.slice(0, 60)}`);
 }
+// The money on the flight is quoted, not measured, so it has exactly one source
+// of truth and it is js/data.js. These are the figures the ledger now states
+// beyond the single yearly total.
+{
+  const content = read('js/content.js');
+  const num = (key) => {
+    const m = content.match(new RegExp(`${key}:\\s*(\\d+)`));
+    return m ? Number(m[1]) : null;
+  };
+  const expectMoney = (label, got, want) => {
+    if (got !== want) failures.push(`flight money: ${label} is ${got} in js/content.js, js/data.js says ${want}`);
+  };
+  expectMoney('conservative', num('conservative'), P.BENEFIT.conservativeAnnual);
+  expectMoney('base', num('base'), P.BENEFIT.baseAnnual);
+  expectMoney('optimistic', num('optimistic'), P.BENEFIT.optimisticAnnual);
+  expectMoney('range systems', num('systems'), P.EXCLUDED.sourceSystems);
+  expectMoney('tooling spend', num('actualUsd'), P.SPEND.actualUsd);
+  expectMoney('API list equivalent', num('apiListEquivalentUsd'), P.SPEND.apiListEquivalentUsd);
+  expectMoney('replacement year one', num('replacementYear1'), P.REPLACEMENT.juanYear1);
+  // The per-system cash split the ledger derives its "of that, cash" line from.
+  // Scoped to the SYSTEMS block and to the entry's own opening brace: matching
+  // the bare id finds it first in REPO_ORDER at the top of the file, and every
+  // project then read the first cashUsd in the file, which is Rutero's.
+  const systemsBlock = content.slice(content.indexOf('export const SYSTEMS'), content.indexOf('export const JUDGEMENT'));
+  for (const project of P.PROJECTS) {
+    if (!project.benefit) continue;
+    const at = systemsBlock.search(new RegExp(`\n  '?${project.id}'?: \\{`));
+    if (at === -1) { failures.push(`flight money: ${project.id} has no entry in js/content.js SYSTEMS`); continue; }
+    const block = systemsBlock.slice(at, at + 1400);
+    const m = block.match(/cashUsd:\s*(\d+)/);
+    if (!m) { failures.push(`flight money: ${project.id} has no cashUsd in js/content.js`); continue; }
+    if (Number(m[1]) !== project.benefit.cashUsd) {
+      failures.push(`flight money: ${project.id} cash is ${m[1]} in js/content.js, js/data.js says ${project.benefit.cashUsd}`);
+    }
+  }
+}
+
+// The hard-parts list on the flight is the short form of js/data.js HARD_PARTS.
+// The prose is deliberately different — nobody reads four paragraphs while
+// flying — but the FILE PATHS are the whole claim: they are what a reader would
+// open to check that the reasoning is committed next to the fix. A path that
+// drifts is a citation to a file that may not exist, which is worse than no
+// citation at all.
+{
+  const content = read('js/content.js');
+  const jBlock = content.slice(content.indexOf('export const JUDGEMENT'), content.indexOf('/** From FUENTE_DE_VERDAD.md'));
+  const flightPaths = [...jBlock.matchAll(/'([^']*(?:\.(?:sql|ts|js|mjs|html)|\(\))[^']*)'/g)].map((m) => m[1]);
+  const sourcePaths = P.HARD_PARTS.flatMap((h) => h.evidence);
+  const norm = (v) => v.replace(/\\u2014/g, '—').replace(/\s+/g, ' ').trim();
+  for (const path of flightPaths) {
+    if (!sourcePaths.some((sp) => norm(sp) === norm(path))) {
+      failures.push(`judgement: js/content.js cites "${path}", which is not in js/data.js HARD_PARTS`);
+    }
+  }
+  const titles = [...jBlock.matchAll(/\n    title: '((?:[^'\\]|\\.)*)'/g)].map((m) => m[1]);
+  if (titles.length !== P.HARD_PARTS.length) {
+    failures.push(`judgement: the flight lists ${titles.length} hard parts, js/data.js has ${P.HARD_PARTS.length}`);
+  }
+}
+
 // The flight is the page people share. Losing its card is invisible from the
 // page itself and only shows up in somebody else's chat window.
 const SOCIAL = [

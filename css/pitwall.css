@@ -315,11 +315,71 @@
 .audit__quoted { color: color-mix(in oklab, var(--sc-ink-soft) 88%, var(--sc-accent)); }
 .audit__quoted::before { content: "\00B7 "; opacity: 0.6; }
 
+/* --------------------------------------------------------- the hard parts */
+/* Two columns, because this is a list and not prose, and seven items stacked
+   in one column does not fit a laptop window. */
+.plate--judgement {
+  inset-inline: auto;
+  left: calc(clamp(14rem, 16vw, 17.5rem) + var(--sc-5));
+  right: var(--sc-gutter);
+  top: 50%; translate: 0 -50%;
+  max-width: min(64rem, 78vw);
+  background: color-mix(in oklab, var(--sc-canvas) 94%, transparent);
+  box-shadow: var(--sc-edge), 0 30px 90px -30px rgb(0 0 0 / 0.9);
+  /* Seven constraints will not fit every window, and none of them may be cut:
+     the whole leg exists to answer "they do not prove judgement". So it scrolls
+     inside itself when it has to, and only when it has to. */
+  max-height: calc(100svh - 3rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Below this the explanation goes and the constraint plus its committed file
+   stay. The title is the judgement; the sentence under it is elaboration. */
+@media (max-height: 940px) {
+  .hard-item__line { display: none; }
+  .hard-item { padding-top: var(--sc-2); }
+}
+.hard-list {
+  list-style: none; margin: var(--sc-4) 0 0; padding: 0;
+  display: grid; gap: var(--sc-4) var(--sc-7);
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+}
+.hard-item {
+  opacity: 0;
+  border-top: 1px solid var(--rule);
+  padding-top: var(--sc-3);
+}
+.hard-item.is-in { opacity: 1; }
+.hard-item__where {
+  margin: 0 0 2px; font-family: var(--sc-font-mono); font-size: 0.64rem;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--sc-accent);
+}
+.hard-item__title {
+  margin: 0 0 var(--sc-2); font-size: var(--sc-t-base); line-height: 1.28;
+  font-weight: 600; color: var(--sc-ink); text-wrap: balance;
+}
+.hard-item__line { margin: 0 0 var(--sc-2); font-size: var(--sc-t-xs); line-height: 1.55; color: var(--sc-ink-soft); }
+.hard-item__evidence { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.hard-item__evidence code {
+  font-family: var(--sc-font-mono); font-size: 0.62rem; letter-spacing: 0.01em;
+  color: color-mix(in oklab, var(--sc-ink-soft) 82%, var(--sc-accent));
+  /* break-all split a path mid-word ('...hardening.sq / l'). This breaks at
+     the separators instead. */
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
 /* ------------------------------------------------------------ the ledger */
 /* The peak lights the whole corridor up behind this block, so the readout has
    to be a solid instrument panel rather than a transparent one. A see-through
    plate here put burning gantries straight through the numbers. */
 .plate--ledger {
+  /* Same rule as the hard parts: the arithmetic, the notes that qualify it and
+     the caveat are the whole point of this block, so none of them may be cut.
+     It scrolls inside itself when the window is too short, and only then. */
+  max-height: calc(100svh - 3rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: color-mix(in oklab, var(--sc-canvas) 96%, transparent);
   box-shadow: var(--sc-edge), 0 30px 90px -30px rgb(0 0 0 / 0.9);
   inset-inline: auto;
@@ -342,6 +402,17 @@
 .ledger tbody td.dim { color: var(--sc-ink-soft); }
 .ledger tfoot td { border-top: 1px solid var(--rule-hot); border-bottom: 0; padding-top: var(--sc-3); color: var(--sc-accent); font-weight: 600; font-size: var(--sc-t-base); }
 .ledger tfoot td:first-child { color: var(--sc-ink-soft); font-weight: 400; font-size: var(--sc-t-xs); letter-spacing: 0.14em; text-transform: uppercase; }
+.notes {
+  list-style: none; margin: var(--sc-4) 0 0; padding: 0;
+  display: grid; gap: var(--sc-2);
+  font-family: var(--sc-font-mono); font-size: var(--sc-t-xs);
+  color: var(--sc-ink-soft); line-height: 1.55;
+  transition: opacity 320ms var(--sc-ease-out);
+}
+.notes li { padding-left: var(--sc-4); position: relative; max-width: 88ch; }
+.notes li::before { content: "\00B7"; position: absolute; left: var(--sc-2); color: var(--sc-accent); }
+.notes b { color: var(--sc-ink); font-weight: 600; }
+
 .excluded, .caveat { margin: var(--sc-4) 0 0; font-size: var(--sc-t-xs); color: var(--sc-ink-soft); max-width: 74ch; line-height: 1.62; }
 .excluded b { color: var(--sc-ink); font-weight: 600; }
 
@@ -435,14 +506,35 @@
   .plate, .plate--ledger, .plate--end { max-width: none; inset-inline: var(--sc-4); }
   .sc-copy--center.plate { left: var(--sc-4); right: var(--sc-4); translate: 0 -50%; }
   .plate--ledger { left: var(--sc-4); right: var(--sc-4); }
-  .sc-copy--lead.plate, .sc-copy--trail.plate { bottom: clamp(7.5rem, 20vh, 11rem); }
+  .plate--judgement { left: var(--sc-4); right: var(--sc-4); top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); max-height: calc(100svh - 11rem); overflow-y: auto; overscroll-behavior: contain; }
+  .hard-list { grid-template-columns: 1fr; gap: var(--sc-3); }
+  /* A phone cannot hold a readout of seven rows plus its metadata under a
+     bottom-anchored block: measured at 390x844, every project plate lost
+     between 13 and 248 pixels off its top, which is the project name. Both
+     edges are pinned and the middle scrolls, so nothing is cut at any height.
+     The two supplementary lines go, because a scroll nobody expects is worse
+     than an elaboration nobody needs. */
+  .sc-copy--lead.plate, .sc-copy--trail.plate {
+    /* --sc-6, not --sc-4: the engine's copy transform travels 2vh, which on a
+       844px phone is 17px, and a 16px inset let that push the block one pixel
+       off the top. */
+    top: var(--sc-6);
+    bottom: clamp(7.5rem, 20vh, 11rem);
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .hard, .shift { display: none; }
+  .audit__meta { font-size: 0.64rem; gap: var(--sc-2) var(--sc-3); }
   .sc-copy--trail.plate { text-align: left; border-right: 0; border-left: 1px solid var(--rule-hot); }
   /* The desktop floor of --sc-t-4xl wraps a hero headline to six lines at
      390px. Step it down one rung. */
   .plate h1 { font-size: var(--sc-t-2xl); }
   .ledger { font-size: 0.68rem; white-space: nowrap; min-width: 30rem; }
   .ledger th, .ledger td { padding: var(--sc-1) var(--sc-2); }
-  .plate--ledger { top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); }
+  /* max-height has to leave room for the offset it is anchored by, or the
+     block is exactly `bottom` too tall and loses its heading. */
+  .plate--ledger { top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); max-height: calc(100svh - 11rem); }
   .excluded, .caveat { font-size: 0.68rem; line-height: 1.5; }
   .plate--end { padding: var(--sc-6) var(--sc-4); }
 }
@@ -481,12 +573,10 @@
 /* The ledger is the one block nothing may be cut from: it is the arithmetic and
    the caveat that qualifies it. Below the height where it fits, it scrolls
    inside itself rather than losing its head and its footnote. */
+/* The scroll and the cap now live on .plate--ledger itself, so this block only
+   shrinks type. Repeating max-height here overrode the phone rule, which is
+   anchored 8rem off the bottom and needs the smaller cap. */
 @media (max-height: 700px) {
-  .plate--ledger {
-    max-height: calc(100svh - 3rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
   .plate--ledger h2 { font-size: var(--sc-t-xl); }
   .excluded, .caveat { font-size: var(--sc-t-xs); }
 }
@@ -496,6 +586,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .audit__row, .ledger tbody tr { opacity: 1; transform: none; }
+  .audit__row, .ledger tbody tr, .hard-item { opacity: 1; transform: none; }
   .bay__bar { transform: none !important; }
 }
