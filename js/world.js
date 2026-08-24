@@ -704,10 +704,16 @@ function frame() {
   // Nothing moved, nothing changed state: skip the draw. The loop stays alive
   // so it can notice the next scroll, but a page sitting still no longer costs
   // a full-screen fragment pass every frame.
-  const still = Math.abs(camZ - frame.lastCam) < 0.05
+  const quiet = Math.abs(camZ - frame.lastCam) < 0.05
     && Math.abs(swayX - frame.lastSwayX) < 0.05
     && Math.abs(swayY - frame.lastSwayY) < 0.05
     && k === frame.lastLeg && Math.abs(local - frame.lastLocal) < 0.0005;
+  // Several consecutive quiet frames, not one. A single frame below the
+  // threshold happens in the tail of the camera lerp, where the world is still
+  // creeping forward, and skipping there would freeze the corridor while the
+  // panels kept moving.
+  frame.quietFor = quiet ? (frame.quietFor || 0) + 1 : 0;
+  const still = frame.quietFor > 6;
   frame.lastCam = camZ; frame.lastSwayX = swayX; frame.lastSwayY = swayY;
   frame.lastLeg = k; frame.lastLocal = local;
 
