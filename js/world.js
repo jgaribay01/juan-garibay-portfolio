@@ -609,6 +609,13 @@ function frame() {
       const far = Math.min(1, Math.max(0, 1 - (d - 2900) / 700));
       const near = Math.min(1, Math.max(0, (d - 40) / 300));
       b.el.style.opacity = String(far * near);
+      // Five of the six screens are light-UI applications. A fixed grade that
+      // sits correctly at distance floods the frame when the panel is close and
+      // large, so the exposure follows the distance: dimmest on the pass.
+      if (b.lit !== undefined || b.el.querySelector('.bay__panel')) {
+        const lit = (0.34 + Math.min(1, d / 2200) * 0.30).toFixed(3);
+        if (lit !== b.lit) { b.lit = lit; b.el.style.setProperty('--lit', lit); }
+      }
     }
   }
 
