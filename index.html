@@ -16,7 +16,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Juan Garibay · six systems, measured</title>
-<meta name="description" content="Six working systems built in seven weeks for a produce distributor, with every figure derived in the browser from the evidence file rather than typed into the page.">
+<meta name="description" content="Six working systems built in six weeks for a produce distributor, with every figure derived in the browser from the evidence file rather than typed into the page.">
 <meta name="theme-color" content="#05070B">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2305070B'/><rect x='6' y='13' width='20' height='3' fill='%23FF4E12'/><rect x='6' y='19' width='12' height='3' fill='%23FF4E12'/></svg>">
 <link rel="canonical" href="https://juan-garibay-portfolio.vercel.app/">
@@ -24,7 +24,7 @@
 <meta property="og:site_name" content="Juan J Garibay">
 <meta property="og:url" content="https://juan-garibay-portfolio.vercel.app/">
 <meta property="og:title" content="Six systems, running.">
-<meta property="og:description" content="Five built in seven weeks for a produce distributor. The sixth is my own. Every figure on this page is counted in your browser, out of a file you can download.">
+<meta property="og:description" content="Five built in six weeks for a produce distributor. The sixth is my own. Every figure on this page is counted in your browser, out of a file you can download.">
 <meta property="og:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png?v=2026-08-24">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -227,8 +227,18 @@
     <!-- 1 · ARRIVAL — suspicion -->
     <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0 0.066 0 0.55">
       <h1 class="sc-display sc-display--xl">Six systems, running.</h1>
-      <p class="sc-body">Five built in seven weeks for a produce distributor in McAllen. The sixth is my own. Nothing here is a mockup.</p>
-      <p class="note">Lines, commits and tests are being counted right now, out of a file you can download. Money is quoted, not measured.</p>
+      <!-- The span is empty here for the same reason every other figure is: it
+           is derived from evidence.json in the browser. It used to read "seven
+           weeks", which was the one claim in the hero that nothing measured,
+           and the file does not support it: first commit to last across the
+           five is 43 days, six weeks and a day. Rounding that up to seven is
+           the exact move the caveat at the ledger refuses to make. -->
+      <p class="sc-body">Five built for a produce distributor in McAllen. First commit to last, <span data-span>a measured span</span>. The sixth is my own. Nothing here is a mockup.</p>
+      <!-- The way out, offered here rather than only at the ledger. A flight is
+           a commitment, and a reader who does not want to make one was
+           previously not told there was a written version until they had flown
+           six of the eleven legs. -->
+      <p class="note">Lines, commits and tests are being counted right now, out of a file you can download. Money is quoted, not measured. <a href="/evidence.html">Read it as a page instead.</a></p>
     </div>
 
     <!-- 2 · RUTERO — scale -->
@@ -349,6 +359,7 @@
     <!-- 11 · THE END WALL — resolve. The CTA is an object in the world. -->
     <div class="sc-copy sc-copy--center plate plate--end" id="contact" data-sc-copy data-sc-window="finale">
       <h2 class="sc-display sc-display--lg">This is what it looks like when one person builds it.</h2>
+      <p class="who">Juan J Garibay, software engineer and operator. I build the systems and then run them inside the business that uses them.</p>
       <a class="wall-plate" id="cta" href="#">Email Juan</a>
       <p class="fine">
         <a href="#" id="evidence-link">Read the evidence</a> ·
