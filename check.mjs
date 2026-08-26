@@ -462,6 +462,37 @@ for (const tag of ['og:image', 'twitter:image']) {
   }
 }
 
+/* The one duration the page states without deriving it.
+   The hero derives the span in the browser, but the meta description, the
+   og:description and og-source.html are static text a crawler reads, so they
+   say "six weeks" — the floor, never the ceiling. That is only honest while
+   the evidence file still supports it. This fails the build the day it stops,
+   which is the whole reason "seven weeks" survived in four places for as long
+   as it did: nothing was ever going to notice. */
+if (existsSync(join(here, 'evidence.json'))) {
+  const EV = JSON.parse(read('evidence.json'));
+  const BUSINESS = ['rutero-tdv', 'cotizador-tdv', 'cotizador-farmers-fresh', 'data-triage-center', 'tdv-outbound-log'];
+  const stamps = EV.repos.filter((r) => BUSINESS.includes(r.id))
+    .flatMap((r) => [r.firstCommit, r.lastCommit])
+    .map((d) => Date.parse(d)).filter(Number.isFinite);
+  if (stamps.length < 2) {
+    failures.push('build span: evidence.json carries no commit dates for the business systems');
+  } else {
+    const weeks = (Math.max(...stamps) - Math.min(...stamps)) / 86400000 / 7;
+    for (const [file, text] of [['index.html', read('index.html')], ['og-source.html', ogSource]]) {
+      const claim = text.match(/built in (\w+) weeks/);
+      if (!claim) continue;
+      const words = { four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+      const stated = words[claim[1]] ?? Number(claim[1]);
+      if (!(stated <= weeks && weeks < stated + 1)) {
+        failures.push(
+          `build span: ${file} says "${claim[1]} weeks", but evidence.json spans ${weeks.toFixed(2)} weeks. ` +
+            'The static copy must state the whole week the span has actually passed, and never round up.');
+      }
+    }
+  }
+}
+
 if (!/connect-src 'self'/.test(read('vercel.json'))) {
   failures.push("vercel.json: the flight fetches evidence.json, so CSP needs connect-src 'self'");
 }

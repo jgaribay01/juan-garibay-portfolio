@@ -265,7 +265,10 @@
 .map__depth-value {
   font-size: var(--sc-t-xl); font-weight: 600; font-variant-numeric: tabular-nums;
   color: var(--sc-accent); line-height: 1;
+  transition: color 420ms var(--sc-ease-out);
 }
+/* Set when the ledger's own total lands. See runLedger(). */
+.map__depth.is-handed-off .map__depth-value { color: var(--sc-ink-soft); }
 .map__cta {
   display: block; text-align: center;
   padding: var(--sc-3) var(--sc-4);
@@ -432,6 +435,14 @@
   overflow-wrap: anywhere;
   word-break: normal;
 }
+/* The functions inside the file above. Indented so it reads as a note on that
+   path rather than a second path, and set in the same soft ink as body copy so
+   it stays over 4.5:1 on the corridor behind it. */
+.hard-item__evidence i {
+  font-family: var(--sc-font-mono); font-size: 0.62rem; font-style: normal;
+  letter-spacing: 0.01em; color: var(--sc-ink-soft);
+  padding-left: var(--sc-2); overflow-wrap: anywhere;
+}
 
 /* ------------------------------------------------------------ the ledger */
 /* The peak lights the whole corridor up behind this block, so the readout has
@@ -464,20 +475,29 @@
 .ledger tbody tr { opacity: 0; }
 .ledger tbody tr.is-in { opacity: 1; }
 .ledger tbody td.dim { color: var(--sc-ink-soft); }
-.ledger tfoot td { border-top: 1px solid var(--rule-hot); border-bottom: 0; padding-top: var(--sc-3); color: var(--sc-accent); font-weight: 600; font-size: var(--sc-t-base); }
+/* The reckoning, at the size of a reckoning.
+   Each bay's own subtotal renders at --sc-t-xl (.audit__total-value), and this
+   row, which is the sum of all six of them and the moment the whole flight is
+   built to deliver, was set at --sc-t-base: exactly half the size of every part
+   it is made of, under a headline three times its size. The money channel gets
+   the largest step because it is the column a visitor came to find; lines,
+   commits and tests take one step below it, so the row has a hierarchy rather
+   than four equal shouts. */
+.ledger tfoot td { border-top: 1px solid var(--rule-hot); border-bottom: 0; padding-top: var(--sc-3); color: var(--sc-accent); font-weight: 600; font-size: var(--sc-t-lg); line-height: 1.15; }
+.ledger tfoot td:last-child { font-size: var(--sc-t-xl); }
 .ledger tfoot td:first-child { color: var(--sc-ink-soft); font-weight: 400; font-size: var(--sc-t-xs); letter-spacing: 0.14em; text-transform: uppercase; }
 .notes {
-  list-style: none; margin: var(--sc-4) 0 0; padding: 0;
-  display: grid; gap: var(--sc-2);
+  list-style: none; margin: var(--sc-3) 0 0; padding: 0;
+  display: grid; gap: var(--sc-1);
   font-family: var(--sc-font-mono); font-size: var(--sc-t-xs);
-  color: var(--sc-ink-soft); line-height: 1.55;
+  color: var(--sc-ink-soft); line-height: 1.5;
   transition: opacity 320ms var(--sc-ease-out);
 }
 .notes li { padding-left: var(--sc-4); position: relative; max-width: 88ch; }
 .notes li::before { content: "\00B7"; position: absolute; left: var(--sc-2); color: var(--sc-accent); }
 .notes b { color: var(--sc-ink); font-weight: 600; }
 
-.excluded, .caveat { margin: var(--sc-4) 0 0; font-size: var(--sc-t-xs); color: var(--sc-ink-soft); max-width: 74ch; line-height: 1.62; }
+.excluded, .caveat { margin: var(--sc-3) 0 0; font-size: var(--sc-t-xs); color: var(--sc-ink-soft); max-width: 74ch; line-height: 1.5; }
 .excluded b { color: var(--sc-ink); font-weight: 600; }
 
 /* --------------------------------------------------------------- the end */
@@ -490,6 +510,14 @@
 .plate--end {
   max-width: min(46rem, 80vw);
   border: 0;
+  /* Left as it was, deliberately. The verification harness reports this
+     headline at 3.42:1 on a 390px phone and it is a false positive: it takes
+     the worst pixel inside the line's box, and on light display type that
+     pixel is the antialiased edge of a glyph rather than anything behind it.
+     Photographing the same rectangle with the glyphs hidden puts the real
+     backdrop at 16.98:1 at its brightest point, 17.79:1 on the mean. Widening
+     this scrim moved the reported number by exactly nothing, which is the tell.
+     Do not "fix" it again. */
   background: radial-gradient(120% 100% at 50% 50%,
     color-mix(in oklab, var(--sc-canvas) 88%, transparent) 0%,
     color-mix(in oklab, var(--sc-canvas) 74%, transparent) 62%,
@@ -498,6 +526,14 @@
   padding: var(--sc-8) var(--sc-7);
 }
 .plate--end h2 { text-wrap: balance; }
+/* Who is saying it. The headline names the achievement and never named the
+   person or what he does, so a reader arriving at the one call to action had
+   to infer both. Same words as the jobTitle in the structured data. */
+.who {
+  margin: var(--sc-3) auto 0; max-width: 44ch;
+  font-family: var(--sc-font-mono); font-size: var(--sc-t-sm);
+  color: var(--sc-ink-soft); line-height: 1.55;
+}
 /* The CTA is an object in the wall, not a button floating over a photograph. */
 .wall-plate {
   display: inline-block; margin: var(--sc-5) 0 var(--sc-4);
@@ -534,6 +570,7 @@
 
 /* ------------------------------------------------------------- responsive */
 @media (max-width: 900px) {
+  :root { --rail-clear: calc(clamp(7.5rem, 20vh, 11rem) + env(safe-area-inset-bottom, 0px)); }
   .map {
     left: 0; right: 0; top: auto; bottom: 0; width: auto;
     flex-direction: row; align-items: center; gap: var(--sc-4);
@@ -545,7 +582,21 @@
      continuous world you cannot skip around in is a video, and hiding the map
      on the half of visitors using a phone is the same thing as not having one.
      Each tick keeps a 44px target and carries its name for a screen reader. */
-  .map { flex-wrap: wrap; row-gap: var(--sc-2); padding: var(--sc-2) var(--sc-4) var(--sc-3); }
+  /* The home indicator sits exactly here.
+     The viewport is declared viewport-fit=cover, which is what lets the
+     corridor run under the rounded corners and the notch, and nothing on the
+     page ever accounted for the inset it hands back. On a phone the rail is
+     pinned to the bottom and the rail is where the one call to action lives, so
+     as soon as Safari's toolbar auto-hides mid-scroll the home indicator lands
+     across the Email Juan button. The payoff of the whole flight was the one
+     thing the system furniture could cover. */
+  .map {
+    flex-wrap: wrap; row-gap: var(--sc-2);
+    padding: var(--sc-2) var(--sc-4) var(--sc-3);
+    padding-bottom: calc(var(--sc-3) + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(var(--sc-4) + env(safe-area-inset-left, 0px));
+    padding-right: calc(var(--sc-4) + env(safe-area-inset-right, 0px));
+  }
   .map__mark { display: none; }
   /* Ten waypoints across 390px is 36px each before gaps, under the 44px floor.
      The strip scrolls rather than shrinking the targets. */
@@ -567,6 +618,17 @@
   .map__depth { flex: 0 0 auto; flex-direction: row; align-items: baseline; gap: var(--sc-2); }
   .map__depth-label, .map__depth-unit { display: none; }
   .map__depth-value { font-size: var(--sc-t-lg); }
+  /* The rail collapses to a bar here and the long unit does not fit, so the
+     readout carries a short one instead of none. Without it the money state is
+     a bare dollar figure in the accent colour with nothing saying it is quoted
+     rather than measured, which is the one distinction this page cannot drop.
+     Full ink, not a faded one: this line is measured for contrast like the
+     rest. */
+  .map__depth-value::after {
+    content: " " attr(data-short);
+    font-size: 0.5em; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--sc-ink-soft);
+  }
   .map__cta { padding: var(--sc-2) var(--sc-4); font-size: 0.68rem; }
 
   .sc-copy--lead.plate { left: var(--sc-gutter); }
@@ -574,9 +636,21 @@
      inset-inline here overrides the left but NOT the translate, so a centred
      plate was pulled half its own width off the left edge of the phone. */
   .plate, .plate--ledger, .plate--end { max-width: none; inset-inline: var(--sc-4); }
-  .sc-copy--center.plate { left: var(--sc-4); right: var(--sc-4); translate: 0 -50%; }
+  /* One number for how much room the rail needs, the inset included, so every
+     plate above it moves together when that inset changes instead of each one
+     guessing at a rail height. The guesses were already wrong without any
+     inset at all: measured at 360x780, the end plate's last line ran 41px
+     under the rail, because a centred plate centres in the viewport and the
+     rail is not part of the viewport it can use. */
+  .sc-copy--center.plate {
+    left: var(--sc-4); right: var(--sc-4); translate: 0 -50%;
+    /* Centre in the room above the rail, not in the window. */
+    top: calc(50% - var(--rail-clear) / 2);
+    max-height: calc(100svh - var(--rail-clear) - var(--sc-6) * 2);
+    overflow-y: auto; overscroll-behavior: contain;
+  }
   .plate--ledger { left: var(--sc-4); right: var(--sc-4); }
-  .plate--judgement { left: var(--sc-4); right: var(--sc-4); top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); max-height: calc(100svh - 11rem); overflow-y: auto; overscroll-behavior: contain; }
+  .plate--judgement { left: var(--sc-4); right: var(--sc-4); top: auto; bottom: var(--rail-clear); translate: none; padding: var(--sc-4); max-height: calc(100svh - var(--rail-clear) - 3rem); overflow-y: auto; overscroll-behavior: contain; }
   .hard-list { grid-template-columns: 1fr; gap: var(--sc-3); }
   /* A phone cannot hold a readout of seven rows plus its metadata under a
      bottom-anchored block: measured at 390x844, every project plate lost
@@ -589,24 +663,65 @@
        844px phone is 17px, and a 16px inset let that push the block one pixel
        off the top. */
     top: var(--sc-6);
-    bottom: clamp(7.5rem, 20vh, 11rem);
+    bottom: var(--rail-clear);
     max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-  .hard, .shift { display: none; }
+  /* Same shed, same reason: clipped, not deleted. A phone reader keeps every
+     sentence a desktop reader gets. */
+  .hard, .shift {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
   .audit__meta { font-size: 0.64rem; gap: var(--sc-2) var(--sc-3); }
   .sc-copy--trail.plate { text-align: left; border-right: 0; border-left: 1px solid var(--rule-hot); }
   /* The desktop floor of --sc-t-4xl wraps a hero headline to six lines at
      390px. Step it down one rung. */
   .plate h1 { font-size: var(--sc-t-2xl); }
-  .ledger { font-size: 0.68rem; white-space: nowrap; min-width: 30rem; }
+  .ledger { font-size: 0.68rem; }
   .ledger th, .ledger td { padding: var(--sc-1) var(--sc-2); }
   /* max-height has to leave room for the offset it is anchored by, or the
      block is exactly `bottom` too tall and loses its heading. */
-  .plate--ledger { top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); max-height: calc(100svh - 11rem); }
+  .plate--ledger { top: auto; bottom: var(--rail-clear); translate: none; padding: var(--sc-4); max-height: calc(100svh - var(--rail-clear) - 3rem); }
   .excluded, .caveat { font-size: 0.68rem; line-height: 1.5; }
   .plate--end { padding: var(--sc-6) var(--sc-4); }
+}
+
+/* The ledger on a phone.
+   Five columns need 550px and a portrait phone gives the plate about 325, so
+   Tests and Per year sat outside the viewport behind a horizontal scroll with
+   nothing to announce it. Measured at 360, 390 and 430: 186 to 254px of the
+   table hidden, and the hidden part was the money. The peak of the page showed
+   a phone reader volume and withheld the return.
+   So below 700px each row becomes a card: the system's name, then its figures
+   each labelled with the column it came from. Nothing is dropped and nothing
+   scrolls sideways. buildLedger() pins the ARIA roles that display:block
+   removes, so this stays a table where it counts. */
+@media (max-width: 700px) {
+  .ledger-scroll { overflow-x: visible; }
+  .ledger, .ledger tbody, .ledger tfoot, .ledger tr, .ledger th, .ledger td { display: block; }
+  .ledger thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* Two by two, not four stacked. Stacked, the six cards ran past the bottom of
+     the plate and buried the total row, which is the sentence the whole leg is
+     built to deliver: a hidden vertical scroll traded for a hidden horizontal
+     one is not a fix. Paired, each card is three lines instead of five. */
+  .ledger tr {
+    border-bottom: 1px solid var(--rule); padding: var(--sc-2) 0;
+    display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--sc-3);
+  }
+  .ledger th, .ledger td { border-bottom: 0; padding: 1px 0; text-align: left; }
+  .ledger th[scope="row"] { grid-column: 1 / -1; font-size: var(--sc-t-base); padding-bottom: var(--sc-1); }
+  .ledger td { display: flex; justify-content: space-between; gap: var(--sc-2); }
+  .ledger td::before {
+    content: attr(data-col);
+    color: var(--sc-ink-soft); letter-spacing: 0.14em; text-transform: uppercase;
+    font-size: 0.6rem; align-self: center;
+  }
+  .ledger tfoot tr { border-bottom: 0; border-top: 1px solid var(--rule-hot); padding-top: var(--sc-3); }
+  .ledger tfoot th[scope="row"] { color: var(--sc-ink-soft); }
+  .ledger tfoot td { padding-top: 1px; font-size: var(--sc-t-base); }
+  .ledger tfoot td:first-child { font-size: var(--sc-t-base); }
 }
 
 /* Short windows, and the same thing a desktop user gets at 200% zoom. A copy
@@ -625,20 +740,58 @@
    would leave a total that does not match the rows above it. So what gives way
    at each step is the supplementary prose, in the order it can best be spared.
    Every threshold below is measured against the tallest block, not guessed. */
+/* Shed by taking the space, not the sentence.
+   These used `display: none`, which removes the element from the accessibility
+   tree as well as from the layout: the same page read on a 1280x800 laptop and
+   a 1280x1000 one offered a screen reader different content, and the shorter
+   one silently lost the hardest thing each system had to solve. Absolute and
+   clipped costs the same zero height and keeps the text readable by anything
+   that is not looking at pixels. */
+.shed {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
 @media (min-width: 901px) and (max-height: 880px) {
   .plate { padding: var(--sc-4); }
   .plate .sc-body { font-size: var(--sc-t-sm); margin-bottom: var(--sc-3); }
-  .hard { display: none; }
+  .hard {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  /* The ledger is the tallest block on the page and the one thing that must
+     never scroll inside itself, so it gives up its own spacing first. It was
+     over its cap on every laptop below 1600x1000 before this existed. */
+  .plate--ledger h2 { margin-bottom: var(--sc-2); }
+  .plate--ledger .notes { gap: 0; margin-top: var(--sc-2); }
+  .plate--ledger .notes li { line-height: 1.45; }
+  .plate--ledger .excluded, .plate--ledger .caveat { margin-top: var(--sc-2); line-height: 1.45; }
+  .ledger th, .ledger td { padding: var(--sc-1) var(--sc-3); }
 }
 @media (min-width: 901px) and (max-height: 790px) {
   .plate h2 { font-size: var(--sc-t-xl); }
-  .shift { display: none; }
+  .shift {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
   .audit__row { padding: 1px 0; }
   .audit__total-value { font-size: var(--sc-t-lg); }
+  .ledger tfoot td { font-size: var(--sc-t-base); }
+  .ledger tfoot td:last-child { font-size: var(--sc-t-lg); }
 }
 @media (min-width: 901px) and (max-height: 700px) {
   .audit { font-size: 0.66rem; }
-  .plate .sc-body { display: none; }
+  /* Clipped, not deleted, for the same reason as .hard and .shift above. */
+  .plate .sc-body {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  /* Last rung. Below this the peak would have to scroll inside itself, so the
+     notes give up the rest of their leading and the table its row padding. The
+     arithmetic and the sentences are all still here; only the air is gone. */
+  .plate--ledger { padding: var(--sc-3); }
+  .plate--ledger .notes li, .plate--ledger .excluded, .plate--ledger .caveat { line-height: 1.38; }
+  .ledger th, .ledger td { padding: 0 var(--sc-3); }
+  .ledger tfoot td { padding-top: var(--sc-2); }
 }
 /* The ledger is the one block nothing may be cut from: it is the arithmetic and
    the caveat that qualifies it. Below the height where it fits, it scrolls
@@ -651,7 +804,12 @@
   .excluded, .caveat { font-size: var(--sc-t-xs); }
 }
 @media (max-width: 900px) and (max-height: 680px) {
-  .hard, .shift { display: none; }
+  /* Same shed, same reason: clipped, not deleted. A phone reader keeps every
+     sentence a desktop reader gets. */
+  .hard, .shift {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
   .plate h2 { font-size: var(--sc-t-lg); }
 }
 
@@ -660,4 +818,36 @@
   /* Drifting motes are decoration and carry no meaning, so they go entirely. */
   .dust { display: none; }
   .bay__bar { transform: none !important; }
+}
+
+/* ------------------------------------------------- what a phone cannot hold */
+/*
+   iPhone Safari was reloading the tab mid-scroll. That is not a script error,
+   it is the OS killing the tab for exceeding its memory budget, and the reason
+   it only happened while scrolling is that the most expensive things here cost
+   their memory per frame rather than once.
+
+   Measured with the compositor's own layer tree, at 390x844 and DPR 3, at the
+   Rutero bay: 62 composited layers holding 118.4MB of backing store, before the
+   WebGL drawing buffer, ~35MB of decoded images and the JS heap. The six
+   .bay__wall layers alone were 39MB of that, a third of the total, because each
+   one is scaled toward the camera to 1600x1100 or more and carries both a
+   filter and a mask, each of which needs its own intermediate surface.
+
+   So on a coarse pointer the page keeps every object that carries meaning and
+   drops the ones that only carry atmosphere. The walls, the dust and the grain
+   go. The backdrop blurs go too: they force the compositor to snapshot and blur
+   whatever is beneath them on every frame the backdrop changes, and beneath
+   them is a WebGL canvas that repaints on every frame of every scroll. Measured
+   against a build with them removed, the largest single channel difference
+   anywhere on screen was 21 of 255, so what they buy is a slight softening and
+   what they cost is the tab.
+
+   The plate makes up the lost blur with opacity, which is free and reads the
+   same over a dark corridor.
+*/
+@media (pointer: coarse) {
+  .bay__wall, .dust, .sc-grain { display: none; }
+  .plate, .map { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  :root { --plate-bg: color-mix(in oklab, var(--sc-canvas) 92%, transparent); }
 }

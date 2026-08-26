@@ -31,6 +31,10 @@ const scrim = document.querySelector('.scrim');
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+/* Not simply !fine. A coarse pointer is the signal that this is a touch device
+   with a per-tab memory budget an iPhone will enforce by killing the tab, and
+   the stylesheet gates the same way so the two never disagree about it. */
+const coarse = matchMedia('(pointer: coarse)').matches;
 
 /* Leg table. The weights are the ones in the markup; duplicating them is not a
    second copy of a fact, it is the same authored number the engine reads, and
@@ -154,11 +158,66 @@ function buildMap() {
       // Not leg.c0. The boundary is exactly where the copy for that leg has not
       // faded in yet, so every waypoint but the first used to land the reader on
       // an empty corridor.
-      scrollTo({ top: trackTop() + landingFor(i) * total * innerHeight, behavior: reduce ? 'auto' : 'smooth' });
+      history.pushState(null, '', `#${leg.key}`);
+      goToLeg(i, true);
     });
     li.append(b);
     ol.append(li);
   });
+}
+
+/* ---------------------------------------------------------- addressable */
+/**
+ * Where you are, in the URL.
+ *
+ * Eleven places and no way to name one of them. Somebody who wanted to show a
+ * colleague the ledger could send the site and the instruction "scroll about
+ * four fifths of the way down", which is the same as saying the page is a
+ * video. A world you cannot link into is worth less than a page of anchors.
+ *
+ * The leg key is the slug, so the address is the same word the rail shows.
+ * Arriving with one jumps rather than flies: a person following a link wants
+ * the thing they were sent, not two minutes of somebody else's corridor. The
+ * hash is then kept current with replaceState, which leaves one history entry
+ * for the whole flight, while a waypoint click pushes one, so Back returns you
+ * to where you jumped from instead of unwinding the entire scroll.
+ */
+const LEG_BY_SLUG = new Map(LEGS.map((l, i) => [l.key, i]));
+/* #contact predates the flight and is still the id on the end plate, so it
+   keeps working as an address rather than silently resolving to nothing. */
+LEG_BY_SLUG.set('contact', AT.end);
+
+function legFromHash() {
+  const slug = decodeURIComponent(location.hash.replace(/^#/, '')).trim().toLowerCase();
+  return LEG_BY_SLUG.has(slug) ? LEG_BY_SLUG.get(slug) : -1;
+}
+
+function goToLeg(i, smooth) {
+  scrollTo({ top: trackTop() + landingFor(i) * total * innerHeight, behavior: smooth && !reduce ? 'smooth' : 'auto' });
+}
+
+function wireAddress() {
+  // The browser's own restore fights an incoming hash: it puts you back where
+  // you left and then the hash puts you somewhere else, and which one wins is
+  // a race. With a hash to honour, the hash wins by saying so.
+  if ('scrollRestoration' in history && legFromHash() >= 0) history.scrollRestoration = 'manual';
+
+  addEventListener('popstate', () => {
+    const i = legFromHash();
+    if (i >= 0) goToLeg(i, false);
+  });
+
+  const start = legFromHash();
+  if (start >= 0) requestAnimationFrame(() => goToLeg(start, false));
+}
+
+function publishLeg(leg) {
+  const want = `#${leg.key}`;
+  if (location.hash === want) return;
+  // Arrival is the page itself, not a place inside it, so it addresses as the
+  // bare URL. Otherwise sharing from the top hands somebody a link with an
+  // anchor on it that means "the beginning".
+  history.replaceState(null, '', leg.i === 0 ? location.pathname + location.search : want);
 }
 
 function trackTop() {
@@ -412,6 +471,40 @@ void main() {
     float strip = smoothstep(0.86, 1.0, abs(across));
     vec3 cool = vec3(0.26, 0.40, 0.56);
     shell = cool * (rails * 0.30 + along * 0.14) + uAccent * strip * 0.55;
+
+    // Which way is down.
+    //
+    // All four faces were shaded identically, and a rectangular tunnel viewed
+    // near its own axis is symmetric top to bottom, so the shell read as bands
+    // across the frame rather than as a floor and a ceiling. Adding a
+    // reflection to the floor did not fix it: a repeating rib on the floor
+    // looks exactly like the repeating rib already on the ceiling. What tells
+    // an eye where the ground is, is that the two are not the same.
+    //
+    // So the ceiling loses light and the floor gains it, pooled toward the
+    // centre line where light off a frame overhead would land and smeared
+    // along the view rather than repeated across it, which is what a
+    // reflection in a floor that is not a mirror actually does. One branch,
+    // already taken by the ray, on a fraction of the pixels.
+    if (!side) {
+      if (rd.y > 0.0) {
+        shell *= 0.42;
+      } else {
+        // The lift dies before the end wall, the same way the gantries do.
+        // A real room is mounted at that depth and it carries its own floor,
+        // so painting a second one underneath it is drawing something nothing
+        // can see. (It is not a contrast fix: the end wall headline measures
+        // the same on a phone with this lift and without it, and at HEAD
+        // before the lift existed. That line is dim because of the room's own
+        // ceiling light, and it is fixed in the plate behind the text.)
+        float toEnd = smoothstep(uEnd, uEnd - 1500.0, p.z);
+        float pool = exp(-abs(p.x) / HW * 1.6) * toEnd;
+        float near = exp(-t * 0.00085);
+        shell *= 1.0 + 0.25 * toEnd;
+        shell += uAccent * pool * near * (0.16 + uSurge * 0.30);
+        shell += cool * pool * near * 0.10;
+      }
+    }
     float fog = 1.0 - exp(-t * (0.00050 - uOpen * 0.00022));
     shell = mix(shell, uCanvas, clamp(fog, 0.0, 1.0));
   }
@@ -496,9 +589,49 @@ function initGL() {
   return true;
 }
 
+/**
+ * Losing the graphics context, and coming back from it.
+ *
+ * There was no handler for this at all. iOS drops a WebGL context whenever the
+ * system wants the memory back, which on the device this page was crashing is
+ * routine rather than exceptional: it happens on backgrounding the tab, on a
+ * memory warning, and on the near miss just before the tab is killed outright.
+ * Without preventDefault on the lost event the browser will never send the
+ * restored one, so the corridor went black permanently and the only way back
+ * was a reload, on a page whose whole close is a plate at the end of it.
+ *
+ * The rest of the page never depended on the corridor. Every fact it carries is
+ * real text in the copy layer, `no-gl` is already the class the page sets when
+ * WebGL was never available, and the frame loop already guards on `gl`. So the
+ * loss is survivable by construction; it just needed to be caught.
+ */
+function wireContextLoss() {
+  canvas.addEventListener('webglcontextlost', (e) => {
+    // Without this, `webglcontextrestored` never fires. It is the whole reason
+    // the handler exists.
+    e.preventDefault();
+    gl = null;
+    document.documentElement.classList.add('no-gl');
+  }, false);
+
+  canvas.addEventListener('webglcontextrestored', () => {
+    if (!initGL()) return;
+    sizeGL();
+    document.documentElement.classList.remove('no-gl');
+    // The frame loop only uploads uniforms when something moved, so a restored
+    // context would hold a blank buffer until the next scroll. Force one.
+    frame.quietFor = 0;
+    frame.lastCam = NaN;
+  }, false);
+}
+
 function sizeGL() {
   if (!gl) return;
-  const dpr = Math.min(devicePixelRatio || 1, 1.75);
+  // 1.75 on a desktop, 1.25 on a coarse pointer. The corridor is soft geometry
+  // and fog: it loses almost nothing at 1.25, and on the device that was being
+  // killed for memory the drawing buffer is one of the few costs paid in full
+  // regardless of what is on screen.
+  const dpr = Math.min(devicePixelRatio || 1, coarse ? 1.25 : 1.75);
   const w = Math.round(canvas.clientWidth * dpr);
   const h = Math.round(canvas.clientHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) {
@@ -622,6 +755,20 @@ function runAudit(a, p) {
 
 let judgement = null;
 
+/**
+ * A citation is a path, sometimes followed by the functions inside it. Three of
+ * the seven carry both, joined in js/data.js by an em dash. Rendering the whole
+ * string inside one <code> was wrong twice over: the function list is prose
+ * about the file rather than a path, and it put a visible em dash on the page.
+ * Split at the dash, mark up each half as what it is, and neither problem needs
+ * js/data.js touched, which keeps the citations checkable against one source.
+ */
+function cite(e) {
+  const at = e.indexOf('\u2014');
+  if (at === -1) return `<code>${e}</code>`;
+  return `<code>${e.slice(0, at).trim()}</code><i>${e.slice(at + 1).trim()}</i>`;
+}
+
 function buildJudgement() {
   const ol = document.getElementById('hard-list');
   if (!ol) return;
@@ -632,7 +779,7 @@ function buildJudgement() {
       `<p class="hard-item__where">${h.system}</p>` +
       `<h3 class="hard-item__title">${h.title}</h3>` +
       `<p class="hard-item__line">${h.line}</p>` +
-      `<p class="hard-item__evidence">${h.evidence.map((e) => `<code>${e}</code>`).join('')}</p>`;
+      `<p class="hard-item__evidence">${h.evidence.map(cite).join('')}</p>`;
     ol.append(li);
   });
   judgement = { items: [...ol.children], shown: -1 };
@@ -666,8 +813,11 @@ function buildLedger() {
       : 'no suite';
     const money = r.sys.money ? usd(r.sys.money.annualUsd) : 'personal';
     tr.innerHTML =
-      `<th scope="row">${r.sys.name}</th><td>${fmt(r.repo.linesTotal)}</td><td>${fmt(r.repo.commits)}</td>` +
-      `<td class="${r.repo.suite ? '' : 'dim'}">${tests}</td><td class="${r.sys.money ? '' : 'dim'}">${money}</td>`;
+      `<th scope="row">${r.sys.name}</th>` +
+      `<td data-col="Lines">${fmt(r.repo.linesTotal)}</td>` +
+      `<td data-col="Commits">${fmt(r.repo.commits)}</td>` +
+      `<td data-col="Tests" class="${r.repo.suite ? '' : 'dim'}">${tests}</td>` +
+      `<td data-col="Per year" class="${r.sys.money ? '' : 'dim'}">${money}</td>`;
     body.append(tr);
     r.tr = tr;
   });
@@ -682,9 +832,11 @@ function buildLedger() {
   };
   const tr = document.createElement('tr');
   tr.innerHTML =
-    `<th scope="row">Summed here, in your browser</th><td>${fmt(totals.lines)}</td><td>${fmt(totals.commits)}</td>` +
-    `<td>${totals.passed === totals.ofTotal ? fmt(totals.passed) : `${fmt(totals.passed)} of ${fmt(totals.ofTotal)}`}</td>` +
-    `<td>${usd(totals.money)}</td>`;
+    `<th scope="row">Summed here, in your browser</th>` +
+    `<td data-col="Lines">${fmt(totals.lines)}</td>` +
+    `<td data-col="Commits">${fmt(totals.commits)}</td>` +
+    `<td data-col="Tests">${totals.passed === totals.ofTotal ? fmt(totals.passed) : `${fmt(totals.passed)} of ${fmt(totals.ofTotal)}`}</td>` +
+    `<td data-col="Per year">${usd(totals.money)}</td>`;
   foot.append(tr);
   foot.style.opacity = '0';
 
@@ -729,6 +881,19 @@ function buildLedger() {
       ? ` Measured ${EV.generatedAt}: ${failing.map((r) => r.sys.name).join(', ')} has a test that is not passing. The evidence file records how many passed and how many ran, not why the difference exists, so that is as far as this sentence goes. The page says it rather than rounding up.`
       : '');
 
+  // A phone cannot fit five columns, so the stylesheet restacks the rows into
+  // cards below 700px. `display: block` on a table element drops the implicit
+  // table/row/cell roles in every engine, which would trade a phone layout for
+  // a screen reader's table. These put them back, and they are harmless at
+  // every width because they only restate what the elements already mean.
+  const table = document.getElementById('ledger');
+  table.setAttribute('role', 'table');
+  table.querySelectorAll('thead, tbody, tfoot').forEach((g) => g.setAttribute('role', 'rowgroup'));
+  table.querySelectorAll('tr').forEach((row) => row.setAttribute('role', 'row'));
+  table.querySelectorAll('th[scope="col"]').forEach((c) => c.setAttribute('role', 'columnheader'));
+  table.querySelectorAll('th[scope="row"]').forEach((c) => c.setAttribute('role', 'rowheader'));
+  table.querySelectorAll('td').forEach((c) => c.setAttribute('role', 'cell'));
+
   ledger = {
     rows, foot, shown: -1,
     // The reasoning arrives AFTER the arithmetic. Rendered up front, these two
@@ -747,11 +912,174 @@ function runLedger(p) {
     ledger.shown = want;
   }
   const footOn = p > 0.72 ? '1' : '0';
-  if (footOn !== ledger.footState) { ledger.footState = footOn; ledger.foot.style.opacity = footOn; }
+  if (footOn !== ledger.footState) {
+    ledger.footState = footOn;
+    ledger.foot.style.opacity = footOn;
+    // The handoff. Until this instant the rail is the only place on the page
+    // carrying a live total, and the reader has been watching it for thirteen
+    // viewport-heights. When the ledger's own total lands, both were showing
+    // the same figure in the same accent at the same size, competing. The rail
+    // stands down instead: the number it was holding has arrived in the world,
+    // and the chrome does not need to keep saying it.
+    document.querySelector('.map__depth')?.classList.toggle('is-handed-off', footOn === '1');
+  }
   const reasoning = p > 0.80 ? '1' : '0';
   if (reasoning !== ledger.reasoning) {
     ledger.reasoning = reasoning;
     ledger.after.forEach((el) => { el.style.opacity = reasoning; });
+  }
+}
+
+/* ------------------------------------------------------- reachable overflow */
+/**
+ * A plate that scrolls inside itself is a keyboard trap in reverse.
+ *
+ * The ledger and the judgement both cap their height and set overflow-y so
+ * nothing they say is ever cut. A pointer can wheel them and a finger can drag
+ * them, but a plain <div> with overflow is not focusable, so a keyboard user
+ * could not scroll one at all: on any viewport where the plate did not fit,
+ * the arithmetic below the fold was simply unreachable without a mouse.
+ *
+ * Marking them focusable is only honest when they actually overflow, otherwise
+ * every reader tabs through two empty stops on the way to the CTA. So it is
+ * measured, here and on resize, and the label says what the region is.
+ */
+function markScrollable() {
+  document.querySelectorAll('.plate--ledger, .plate--judgement').forEach((el) => {
+    const overflows = el.scrollHeight - el.clientHeight > 2;
+    if (overflows === (el.getAttribute('tabindex') === '0')) return;
+    if (overflows) {
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'region');
+      el.setAttribute('aria-label', el.classList.contains('plate--ledger')
+        ? 'The ledger. Scrollable: it is taller than this window.'
+        : 'The hard parts. Scrollable: it is taller than this window.');
+    } else {
+      el.removeAttribute('tabindex');
+      el.removeAttribute('role');
+      el.removeAttribute('aria-label');
+    }
+  });
+}
+
+/* ----------------------------------------------------------- the hero span */
+/**
+ * How long the five took, counted rather than claimed.
+ *
+ * The hero used to say "seven weeks". It was the only figure in the opening
+ * that nothing derived, and the evidence file does not support it: earliest
+ * first commit to latest last commit across the five business systems is 43
+ * days. Calling that seven weeks rounds 6.1 up, which is precisely what the
+ * caveat under the ledger says this page will not do.
+ *
+ * Elapsed, not effort. It is the span the work happened inside, on the same
+ * basis as everything else here: git, and only git. The static description and
+ * card copy cannot derive anything, so they say six weeks, the floor, and
+ * check.mjs fails if the file ever stops supporting it.
+ */
+const BUSINESS = ['rutero-tdv', 'cotizador-tdv', 'cotizador-farmers-fresh', 'data-triage-center', 'tdv-outbound-log'];
+
+function buildSpan() {
+  const host = document.querySelector('[data-span]');
+  if (!host) return;
+  const stamps = BUSINESS.map((id) => byId.get(id)).filter(Boolean)
+    .flatMap((r) => [r.firstCommit, r.lastCommit]).filter(Boolean).map((d) => Date.parse(d))
+    .filter((n) => Number.isFinite(n));
+  if (stamps.length < 2) { host.textContent = 'a span the evidence file does not carry'; return; }
+  const days = Math.round((Math.max(...stamps) - Math.min(...stamps)) / 86400000);
+  host.textContent = `${fmt(days)} days`;
+  host.title = `Earliest first commit to latest last commit across the ${BUSINESS.length} systems built for the business.`;
+}
+
+/* ------------------------------------------------------------- the readout */
+/**
+ * The rail's readout, and why it has three states.
+ *
+ * It used to count exactly one thing: lines. Every bay is passed by the seventh
+ * leg, so the number reached its final value at 52% of the page and then sat
+ * frozen through the dark stretch, the judgement, the whole peak and the end
+ * wall. Measured, not guessed: scrolling in 1% steps, the total first appears
+ * at p=0.52 and never changes again. The one live number on a page
+ * whose whole claim is that its numbers are live was dead for the back half of
+ * it, and it was dead loudest exactly where the ledger was totalling the same
+ * figure in the same accent two hundred pixels away.
+ *
+ * So the readout tracks the argument rather than one column of it, and it
+ * changes state where the argument does. Volume while you are flying the bays.
+ * Decisions while the judgement lands, because that leg exists to say lines do
+ * not prove judgement. Money once the ledger starts adding up, because that is
+ * what the last third is about and what the visitor came to find out.
+ *
+ * Each state is derived from the same evidence as the plate beside it: lines
+ * from the bay audits, calls from the judgement list, money from the ledger
+ * rows that have actually landed. The money state says "quoted" on its face in
+ * both the long unit and the short one, because it is quoted and the rest of
+ * this page would be lying if this corner of it rounded that off.
+ */
+const READOUT = {
+  lines: {
+    label: 'Counted so far',
+    unit: 'lines of authored source',
+    short: 'lines',
+    aria: (v) => `${v} lines of authored source counted so far`,
+  },
+  calls: {
+    label: 'Committed with proof',
+    unit: 'hard calls, each with its file',
+    short: 'hard calls',
+    aria: (v) => `${v} hard calls committed, each with the file that proves it`,
+  },
+  money: {
+    label: 'Quoted per year',
+    unit: 'dollars, quoted not measured',
+    short: 'a year, quoted',
+    aria: (v) => `${v} a year, quoted from the source document rather than measured`,
+  },
+};
+
+const readoutEls = {
+  label: document.querySelector('.map__depth-label'),
+  unit: document.querySelector('.map__depth-unit'),
+};
+let readoutState = null;
+
+function runReadout(k, lines) {
+  let state = 'lines', value = fmt(lines);
+  if (k === AT.judgement) {
+    state = 'calls';
+    value = fmt(Math.max(0, judgement ? judgement.shown : 0));
+  } else if (k >= AT.ledger && ledger && ledger.shown > 0) {
+    state = 'money';
+    // Only the rows that have actually landed. The rail and the table reach the
+    // total on the same scroll pixel because they are counting the same rows.
+    //
+    // The `shown > 0` is not a guard against a missing ledger, it is the whole
+    // timing. Switching on the leg boundary put "$0" in the accent under the
+    // words QUOTED PER YEAR for the first tenth of the peak: the readout's
+    // opening statement about the money was that there is none. Waiting for the
+    // first row means the state change and the first figure are the same event.
+    const sum = ledger.rows.slice(0, ledger.shown)
+      .reduce((t, r) => t + (r.sys.money?.annualUsd || 0), 0);
+    value = usd(sum);
+  } else if (k >= AT.ledger) {
+    // Between the ledger opening and its first row: hold what the judgement
+    // left on the rail rather than blanking it or pre-empting the total.
+    state = 'calls';
+    value = fmt(Math.max(0, judgement ? judgement.shown : 0));
+  }
+
+  if (state !== readoutState) {
+    readoutState = state;
+    const spec = READOUT[state];
+    readoutEls.label.textContent = spec.label;
+    readoutEls.unit.textContent = spec.unit;
+    runningEl.dataset.short = spec.short;
+    frame.lastReadout = null;
+  }
+  if (value !== frame.lastReadout) {
+    frame.lastReadout = value;
+    runningEl.textContent = value;
+    runningEl.setAttribute('aria-label', READOUT[state].aria(value));
   }
 }
 
@@ -805,6 +1133,29 @@ const VP = { lead: 0.66, trail: 0.38, center: 0.52 };
 let vp = VP.lead, vpTarget = VP.lead;
 
 let camZ = 0, camTarget = 0;
+/**
+ * The pointer sway, and the two layers that have to agree about it.
+ *
+ * The shader takes sway as a world-space camera offset, `ro = vec3(uSway.x,
+ * uSway.y, uCam)`, so a point at depth d moves across the screen by
+ * sway * 1000/d. The CSS camera was handed a quarter of the same number, and
+ * `.scene`'s perspective puts its gain at 0.25 * 1000/(1000+d). Measured on
+ * leg 2 at 1440x900, sweeping the pointer from clientX 20 to 1420: the
+ * corridor's gantry corner travelled about 200px and the Rutero bezel under
+ * 10. A twentyfold mismatch between the two layers that are supposed to be one
+ * space, which is exactly the failure this file's header names, and it is on
+ * every frame of every leg.
+ *
+ * Exact parity would mean translating the CSS camera by camZ + PERSPECTIVE,
+ * which rescales every panel and forces SHAPE and PANEL_X to be re-authored.
+ * This is the shippable half: match the gain at the depth panels actually
+ * occupy while their copy is legible, which is (1000 + d)/d for d around
+ * 400-1200, so roughly 2.5 rather than 0.25, and then cut the amplitude at the
+ * source so the panels do not swim across the copy that describes them.
+ */
+const SWAY_CSS = 2.5;
+const SWAY_X = 90, SWAY_Y = 60;
+
 let swayX = 0, swayY = 0, swayTX = 0, swayTY = 0;
 let curLeg = -1;
 const runningEl = document.getElementById('running-total');
@@ -825,7 +1176,23 @@ let primed = false;
 
 function frame() {
   const t = trackPos();
-  camTarget = t * PX_PER_VH;
+  /**
+   * Reduced motion used to mean "the same flight, without the easing".
+   *
+   * The dust went, the rows stopped staggering, and the camera lerp was set to
+   * 1 so it tracked the scroll exactly. But the camera still flew: a
+   * full-screen corridor rushing forward, one to one with the wheel, which is
+   * the specific thing the setting exists to prevent. Removing the damping
+   * arguably made it worse, because an undamped camera snaps.
+   *
+   * So under the setting the camera does not travel with the scroll at all. It
+   * holds at the depth where the current leg's panel is framed and its copy is
+   * fully legible, and it moves only when the leg does: one still per leg, and
+   * a cut between them. That is the same bargain the engine strikes for video,
+   * where a scrub clip becomes its poster, and nothing is lost by it, because
+   * every fact the world carries is stated as real text in the copy layer.
+   */
+  camTarget = (reduce ? landingFor(legAt(t)) * total : t) * PX_PER_VH;
   // A reload restores the scroll position, but the camera started at the mouth
   // of the corridor and lerped forward from there: a reader who refreshed at
   // the ledger watched the whole flight replay at speed. Snap on the first
@@ -841,12 +1208,19 @@ function frame() {
   vp += (vpTarget - vp) * (reduce ? 1 : 0.04);
   scene.style.perspectiveOrigin = (vp * 100).toFixed(2) + '% 50%';
   if (!reduce) runDust(camZ);
-  cam.style.transform = `translate3d(${(-swayX * 0.25).toFixed(2)}px, ${(-swayY * 0.25).toFixed(2)}px, ${camZ.toFixed(1)}px)`;
+  // SWAY_CSS, not 0.25. See the note at swayTX.
+  cam.style.transform = `translate3d(${(-swayX * SWAY_CSS).toFixed(2)}px, ${(-swayY * SWAY_CSS).toFixed(2)}px, ${camZ.toFixed(1)}px)`;
 
   for (const b of bayEls) {
     const d = b.z - camZ;
     const on = d > 30 && d < (b.far ? b.far + 700 : 3600);
-    if (on !== b.on) { b.on = on; b.el.style.visibility = on ? 'visible' : 'hidden'; }
+    // display, not visibility. A hidden element keeps its box, and inside a
+    // preserve-3d scene it keeps its composited layer and that layer's backing
+    // store with it, so twenty-six off-camera bays were still being paid for on
+    // a device that was running out of room. The bays are aria-hidden
+    // decoration whose every fact is stated in the copy layer, so dropping them
+    // from layout costs nothing a reader can perceive.
+    if (on !== b.on) { b.on = on; b.el.style.display = on ? '' : 'none'; }
     if (on) {
       // Fade at BOTH ends. Only the far end was faded on the first cut, so a
       // panel about to pass the camera filled half the frame with a blurred
@@ -916,8 +1290,7 @@ function frame() {
   runJudgement(k === AT.judgement ? local : (k > AT.judgement ? 1 : 0));
   runLedger(k === AT.ledger ? local : (k > AT.ledger ? 1 : 0));
 
-  const running = audits.reduce((s, a) => s + a.sum, 0);
-  if (running !== frame.lastRunning) { frame.lastRunning = running; runningEl.textContent = fmt(running); }
+  runReadout(k, audits.reduce((s, a) => s + a.sum, 0));
 
   if (k !== curLeg) {
     curLeg = k;
@@ -929,6 +1302,7 @@ function frame() {
     // place you are in has to be stated somewhere. A map you cannot read is
     // not a map.
     document.getElementById('map-now').textContent = leg.label;
+    publishLeg(leg);
   }
 
   requestAnimationFrame(frame);
@@ -1023,25 +1397,32 @@ async function boot() {
   buildMap();
   wireCopy();
   buildDust();
+  buildSpan();
   buildJudgement();
   buildLedger();
   buildBays();
   wireEnd();
   wireFocus();
   wireTelemetry();
+  // Last of the wiring: it can scroll the page, so everything it might land on
+  // has to be built and filled first.
+  wireAddress();
+  markScrollable();
+  addEventListener('resize', markScrollable, { passive: true });
 
   if (!initGL()) {
     // No WebGL: the corridor is gone, the panels and every number are not.
     canvas.remove();
     document.documentElement.classList.add('no-gl');
   } else {
+    wireContextLoss();
     sizeGL();
   }
 
   if (fine && !reduce) {
     addEventListener('pointermove', (e) => {
-      swayTX = (e.clientX / innerWidth - 0.5) * 260;
-      swayTY = (e.clientY / innerHeight - 0.5) * 160;
+      swayTX = (e.clientX / innerWidth - 0.5) * SWAY_X;
+      swayTY = (e.clientY / innerHeight - 0.5) * SWAY_Y;
     }, { passive: true });
   }
 
