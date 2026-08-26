@@ -570,6 +570,7 @@
 
 /* ------------------------------------------------------------- responsive */
 @media (max-width: 900px) {
+  :root { --rail-clear: calc(clamp(7.5rem, 20vh, 11rem) + env(safe-area-inset-bottom, 0px)); }
   .map {
     left: 0; right: 0; top: auto; bottom: 0; width: auto;
     flex-direction: row; align-items: center; gap: var(--sc-4);
@@ -581,7 +582,21 @@
      continuous world you cannot skip around in is a video, and hiding the map
      on the half of visitors using a phone is the same thing as not having one.
      Each tick keeps a 44px target and carries its name for a screen reader. */
-  .map { flex-wrap: wrap; row-gap: var(--sc-2); padding: var(--sc-2) var(--sc-4) var(--sc-3); }
+  /* The home indicator sits exactly here.
+     The viewport is declared viewport-fit=cover, which is what lets the
+     corridor run under the rounded corners and the notch, and nothing on the
+     page ever accounted for the inset it hands back. On a phone the rail is
+     pinned to the bottom and the rail is where the one call to action lives, so
+     as soon as Safari's toolbar auto-hides mid-scroll the home indicator lands
+     across the Email Juan button. The payoff of the whole flight was the one
+     thing the system furniture could cover. */
+  .map {
+    flex-wrap: wrap; row-gap: var(--sc-2);
+    padding: var(--sc-2) var(--sc-4) var(--sc-3);
+    padding-bottom: calc(var(--sc-3) + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(var(--sc-4) + env(safe-area-inset-left, 0px));
+    padding-right: calc(var(--sc-4) + env(safe-area-inset-right, 0px));
+  }
   .map__mark { display: none; }
   /* Ten waypoints across 390px is 36px each before gaps, under the 44px floor.
      The strip scrolls rather than shrinking the targets. */
@@ -621,9 +636,21 @@
      inset-inline here overrides the left but NOT the translate, so a centred
      plate was pulled half its own width off the left edge of the phone. */
   .plate, .plate--ledger, .plate--end { max-width: none; inset-inline: var(--sc-4); }
-  .sc-copy--center.plate { left: var(--sc-4); right: var(--sc-4); translate: 0 -50%; }
+  /* One number for how much room the rail needs, the inset included, so every
+     plate above it moves together when that inset changes instead of each one
+     guessing at a rail height. The guesses were already wrong without any
+     inset at all: measured at 360x780, the end plate's last line ran 41px
+     under the rail, because a centred plate centres in the viewport and the
+     rail is not part of the viewport it can use. */
+  .sc-copy--center.plate {
+    left: var(--sc-4); right: var(--sc-4); translate: 0 -50%;
+    /* Centre in the room above the rail, not in the window. */
+    top: calc(50% - var(--rail-clear) / 2);
+    max-height: calc(100svh - var(--rail-clear) - var(--sc-6) * 2);
+    overflow-y: auto; overscroll-behavior: contain;
+  }
   .plate--ledger { left: var(--sc-4); right: var(--sc-4); }
-  .plate--judgement { left: var(--sc-4); right: var(--sc-4); top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); max-height: calc(100svh - 11rem); overflow-y: auto; overscroll-behavior: contain; }
+  .plate--judgement { left: var(--sc-4); right: var(--sc-4); top: auto; bottom: var(--rail-clear); translate: none; padding: var(--sc-4); max-height: calc(100svh - var(--rail-clear) - 3rem); overflow-y: auto; overscroll-behavior: contain; }
   .hard-list { grid-template-columns: 1fr; gap: var(--sc-3); }
   /* A phone cannot hold a readout of seven rows plus its metadata under a
      bottom-anchored block: measured at 390x844, every project plate lost
@@ -636,7 +663,7 @@
        844px phone is 17px, and a 16px inset let that push the block one pixel
        off the top. */
     top: var(--sc-6);
-    bottom: clamp(7.5rem, 20vh, 11rem);
+    bottom: var(--rail-clear);
     max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -656,7 +683,7 @@
   .ledger th, .ledger td { padding: var(--sc-1) var(--sc-2); }
   /* max-height has to leave room for the offset it is anchored by, or the
      block is exactly `bottom` too tall and loses its heading. */
-  .plate--ledger { top: auto; bottom: 8rem; translate: none; padding: var(--sc-4); max-height: calc(100svh - 11rem); }
+  .plate--ledger { top: auto; bottom: var(--rail-clear); translate: none; padding: var(--sc-4); max-height: calc(100svh - var(--rail-clear) - 3rem); }
   .excluded, .caveat { font-size: 0.68rem; line-height: 1.5; }
   .plate--end { padding: var(--sc-6) var(--sc-4); }
 }
@@ -791,4 +818,36 @@
   /* Drifting motes are decoration and carry no meaning, so they go entirely. */
   .dust { display: none; }
   .bay__bar { transform: none !important; }
+}
+
+/* ------------------------------------------------- what a phone cannot hold */
+/*
+   iPhone Safari was reloading the tab mid-scroll. That is not a script error,
+   it is the OS killing the tab for exceeding its memory budget, and the reason
+   it only happened while scrolling is that the most expensive things here cost
+   their memory per frame rather than once.
+
+   Measured with the compositor's own layer tree, at 390x844 and DPR 3, at the
+   Rutero bay: 62 composited layers holding 118.4MB of backing store, before the
+   WebGL drawing buffer, ~35MB of decoded images and the JS heap. The six
+   .bay__wall layers alone were 39MB of that, a third of the total, because each
+   one is scaled toward the camera to 1600x1100 or more and carries both a
+   filter and a mask, each of which needs its own intermediate surface.
+
+   So on a coarse pointer the page keeps every object that carries meaning and
+   drops the ones that only carry atmosphere. The walls, the dust and the grain
+   go. The backdrop blurs go too: they force the compositor to snapshot and blur
+   whatever is beneath them on every frame the backdrop changes, and beneath
+   them is a WebGL canvas that repaints on every frame of every scroll. Measured
+   against a build with them removed, the largest single channel difference
+   anywhere on screen was 21 of 255, so what they buy is a slight softening and
+   what they cost is the tab.
+
+   The plate makes up the lost blur with opacity, which is free and reads the
+   same over a dark corridor.
+*/
+@media (pointer: coarse) {
+  .bay__wall, .dust, .sc-grain { display: none; }
+  .plate, .map { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  :root { --plate-bg: color-mix(in oklab, var(--sc-canvas) 92%, transparent); }
 }

@@ -31,6 +31,10 @@ const scrim = document.querySelector('.scrim');
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+/* Not simply !fine. A coarse pointer is the signal that this is a touch device
+   with a per-tab memory budget an iPhone will enforce by killing the tab, and
+   the stylesheet gates the same way so the two never disagree about it. */
+const coarse = matchMedia('(pointer: coarse)').matches;
 
 /* Leg table. The weights are the ones in the markup; duplicating them is not a
    second copy of a fact, it is the same authored number the engine reads, and
@@ -585,9 +589,49 @@ function initGL() {
   return true;
 }
 
+/**
+ * Losing the graphics context, and coming back from it.
+ *
+ * There was no handler for this at all. iOS drops a WebGL context whenever the
+ * system wants the memory back, which on the device this page was crashing is
+ * routine rather than exceptional: it happens on backgrounding the tab, on a
+ * memory warning, and on the near miss just before the tab is killed outright.
+ * Without preventDefault on the lost event the browser will never send the
+ * restored one, so the corridor went black permanently and the only way back
+ * was a reload, on a page whose whole close is a plate at the end of it.
+ *
+ * The rest of the page never depended on the corridor. Every fact it carries is
+ * real text in the copy layer, `no-gl` is already the class the page sets when
+ * WebGL was never available, and the frame loop already guards on `gl`. So the
+ * loss is survivable by construction; it just needed to be caught.
+ */
+function wireContextLoss() {
+  canvas.addEventListener('webglcontextlost', (e) => {
+    // Without this, `webglcontextrestored` never fires. It is the whole reason
+    // the handler exists.
+    e.preventDefault();
+    gl = null;
+    document.documentElement.classList.add('no-gl');
+  }, false);
+
+  canvas.addEventListener('webglcontextrestored', () => {
+    if (!initGL()) return;
+    sizeGL();
+    document.documentElement.classList.remove('no-gl');
+    // The frame loop only uploads uniforms when something moved, so a restored
+    // context would hold a blank buffer until the next scroll. Force one.
+    frame.quietFor = 0;
+    frame.lastCam = NaN;
+  }, false);
+}
+
 function sizeGL() {
   if (!gl) return;
-  const dpr = Math.min(devicePixelRatio || 1, 1.75);
+  // 1.75 on a desktop, 1.25 on a coarse pointer. The corridor is soft geometry
+  // and fog: it loses almost nothing at 1.25, and on the device that was being
+  // killed for memory the drawing buffer is one of the few costs paid in full
+  // regardless of what is on screen.
+  const dpr = Math.min(devicePixelRatio || 1, coarse ? 1.25 : 1.75);
   const w = Math.round(canvas.clientWidth * dpr);
   const h = Math.round(canvas.clientHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) {
@@ -1170,7 +1214,13 @@ function frame() {
   for (const b of bayEls) {
     const d = b.z - camZ;
     const on = d > 30 && d < (b.far ? b.far + 700 : 3600);
-    if (on !== b.on) { b.on = on; b.el.style.visibility = on ? 'visible' : 'hidden'; }
+    // display, not visibility. A hidden element keeps its box, and inside a
+    // preserve-3d scene it keeps its composited layer and that layer's backing
+    // store with it, so twenty-six off-camera bays were still being paid for on
+    // a device that was running out of room. The bays are aria-hidden
+    // decoration whose every fact is stated in the copy layer, so dropping them
+    // from layout costs nothing a reader can perceive.
+    if (on !== b.on) { b.on = on; b.el.style.display = on ? '' : 'none'; }
     if (on) {
       // Fade at BOTH ends. Only the far end was faded on the first cut, so a
       // panel about to pass the camera filled half the frame with a blurred
@@ -1365,6 +1415,7 @@ async function boot() {
     canvas.remove();
     document.documentElement.classList.add('no-gl');
   } else {
+    wireContextLoss();
     sizeGL();
   }
 
