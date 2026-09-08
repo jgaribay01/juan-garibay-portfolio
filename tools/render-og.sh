@@ -47,6 +47,19 @@ npx --yes playwright screenshot \
   --wait-for-timeout=1500 \
   "http://127.0.0.1:$PORT/og-source.html" "$OUT" >/dev/null 2>&1
 
+# Quantise to a palette. The card is flat colour, type and one soft gradient,
+# so 8-bit costs nothing visible and takes it from ~280 KB to ~60 KB. The
+# quality floor is deliberately not lower: below 80 the beam's radial falloff
+# starts to mottle, which is the one visual gesture the card has.
+if command -v pngquant >/dev/null; then
+  BEFORE="$(wc -c < "$OUT")"
+  pngquant --quality 80-95 --speed 1 --strip --force --output "$OUT" "$OUT"
+  printf 'quantised: %.0f KB -> %.0f KB\n' \
+    "$(echo "scale=2; $BEFORE/1024" | bc)" "$(echo "scale=2; $(wc -c < "$OUT")/1024" | bc)"
+else
+  echo "pngquant not found (brew install pngquant) — shipping the card uncompressed" >&2
+fi
+
 SIZE="$(file -b "$OUT" | grep -o '[0-9]\+ x [0-9]\+' || true)"
 if [ "$SIZE" != "1200 x 630" ]; then
   echo "og: expected 1200 x 630, got '${SIZE:-unknown}'" >&2
