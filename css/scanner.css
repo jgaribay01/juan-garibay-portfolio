@@ -271,13 +271,10 @@
   padding-bottom: 14px;
 }
 
-.rail a.is-reading {
-  color: var(--color-accent);
-}
-
 /* The marker sits in the gutter the grid already leaves, not on top of the
    case number — it was overprinting the C of CS-01. */
 .rail a.is-reading {
+  color: var(--color-accent);
   position: relative;
 }
 
