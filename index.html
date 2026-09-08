@@ -1,39 +1,45 @@
 <!doctype html>
 <!--
-  pitwall. One continuous world, flown forward.
+  The case pack.
 
-  Grammar: continuous world (uniqueness.md §2.4), so worldflight mode, one fixed
-  stage, one spacer, and nothing at all in document flow. The world is not
-  footage: it is a WebGL corridor and a CSS 3D scene sharing one camera, which
-  is why there are no seams to hide rather than seams hidden well.
+  Twelve blocks per system, the same twelve every time, so six systems can be
+  read side by side instead of one at a time.
 
-  Every figure on this page is empty in the markup on purpose. js/world.js sums
-  them out of assets/evidence.json in the browser. There is one copy of each
-  measured number in this build and it is in that file.
+  Every figure this page shows is empty in the markup on purpose. js/dossier.js
+  fills them from evidence.json and js/data.js in the browser, which is why
+  check.mjs fails the build if a measured number is ever typed into this file,
+  js/cases.js or js/dossier.js. The rule is the subject of CS-06.
+
+  The flight — the WebGL corridor this page replaced at the front door — is
+  still here, at /flight.html, and still linked. It was not deleted; it stopped
+  being the first thing a reader has to fly through to reach the work.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Juan Garibay · six systems, measured</title>
-<meta name="description" content="Six working systems built in six weeks for a produce distributor, with every figure derived in the browser from the evidence file rather than typed into the page.">
-<meta name="theme-color" content="#05070B">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2305070B'/><rect x='6' y='13' width='20' height='3' fill='%23FF4E12'/><rect x='6' y='19' width='12' height='3' fill='%23FF4E12'/></svg>">
+<title>Juan Garibay · operations case pack</title>
+<meta name="description" content="Six systems built for a cross-border food distribution business, each written to the same twelve-block schema: the business problem, the data problem under it, what was built, and what it is worth.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0b0d">
+<meta name="author" content="Juan J Garibay">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="canonical" href="https://juan-garibay-portfolio.vercel.app/">
+
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Juan J Garibay">
 <meta property="og:url" content="https://juan-garibay-portfolio.vercel.app/">
-<meta property="og:title" content="Six systems, running.">
-<meta property="og:description" content="Five built in six weeks for a produce distributor. The sixth is my own. Every figure on this page is counted in your browser, out of a file you can download.">
+<meta property="og:title" content="Six systems, and the data problems under them">
+<meta property="og:description" content="An operations case pack: five production tools and one control layer, each on the same twelve-block schema, with every figure counted in your browser from a file you can download.">
 <meta property="og:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png?v=2026-08-24">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="A dark corridor of receding orange frames, with the headline and a row of measured totals across the bottom.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Six systems, running.">
-<meta name="twitter:description" content="Every figure on this page is counted in your browser, out of a file you can download.">
+<meta name="twitter:title" content="Six systems, and the data problems under them">
+<meta name="twitter:description" content="Five production tools and one control layer, each on the same twelve-block schema.">
 <meta name="twitter:image" content="https://juan-garibay-portfolio.vercel.app/img/og.png?v=2026-08-24">
-<meta name="author" content="Juan J Garibay">
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -54,16 +60,14 @@
       "@type": "WebSite",
       "@id": "https://juan-garibay-portfolio.vercel.app/#site",
       "url": "https://juan-garibay-portfolio.vercel.app/",
-      "name": "Juan Garibay · six systems, measured",
-      "author": {
-        "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-      },
+      "name": "Juan Garibay · operations case pack",
+      "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" },
       "inLanguage": "en"
     },
     {
       "@type": "ItemList",
-      "@id": "https://juan-garibay-portfolio.vercel.app/#systems",
-      "name": "Systems built and running",
+      "@id": "https://juan-garibay-portfolio.vercel.app/#cases",
+      "name": "Operations case pack",
       "numberOfItems": 6,
       "itemListElement": [
         {
@@ -75,9 +79,7 @@
             "description": "Routes were drawn by hand every morning. Now one build runs three apps: driver, sales, admin.",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
-            "author": {
-              "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-            },
+            "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" },
             "url": "https://rutero-tdv.vercel.app/"
           }
         },
@@ -90,9 +92,7 @@
             "description": "One truck, two legs, two currencies. Freight has to land fairly on everything on board.",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
-            "author": {
-              "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-            },
+            "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" },
             "url": "https://cotizador-logistico-tdv-deploy.vercel.app/"
           }
         },
@@ -105,9 +105,7 @@
             "description": "A second importer, its own lanes, its own design system. Empty folder to production in three days.",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
-            "author": {
-              "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-            },
+            "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" },
             "url": "https://cotizador-farmers-fresh.vercel.app/"
           }
         },
@@ -120,9 +118,7 @@
             "description": "Cleans catalogue rows and validates UPCs one keystroke at a time. It earns nothing, and it is here anyway.",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
-            "author": {
-              "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-            }
+            "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" }
           }
         },
         {
@@ -134,9 +130,7 @@
             "description": "Scanned against the catalogue at the door, instead of onto paper.",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
-            "author": {
-              "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-            },
+            "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" },
             "url": "https://tdv-outbound-log.vercel.app/"
           }
         },
@@ -145,14 +139,11 @@
           "position": 6,
           "item": {
             "@type": "SoftwareApplication",
-            "name": "Currents",
-            "description": "The one build here that is public by design. Installs to a home screen and keeps working with no network.",
-            "applicationCategory": "BusinessApplication",
-            "operatingSystem": "Web",
-            "author": {
-              "@id": "https://juan-garibay-portfolio.vercel.app/#juan"
-            },
-            "url": "https://currents-weld.vercel.app/"
+            "name": "Single-source-of-truth guard",
+            "description": "Makes disagreement between copies of the same fact a build failure instead of a discovery.",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Node",
+            "author": { "@id": "https://juan-garibay-portfolio.vercel.app/#juan" }
           }
         }
       ]
@@ -160,234 +151,84 @@
   ]
 }
 </script>
-<link rel="stylesheet" href="scrollcraft.css">
-<link rel="stylesheet" href="css/pitwall.css">
+
+<link rel="preload" href="css/fonts/space-grotesk-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="css/fonts/jetbrains-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/dossier.css">
 </head>
 <body>
 
-<span data-sc-progress></span>
-<div class="sc-grain" aria-hidden="true"></div>
+<div class="wrap">
 
-<!-- The nav is a map, because a world you cannot skip around in is a video. -->
-<nav class="map" aria-label="Flight path">
-  <p class="map__mark"><span class="map__name">Juan Garibay</span></p>
-  <ol class="map__legs" id="map-legs"></ol>
-  <p class="map__now" id="map-now" aria-hidden="true"></p>
-  <p class="map__depth">
-    <span class="map__depth-label">Counted so far</span>
-    <output class="map__depth-value" id="running-total" aria-live="off" aria-label="Lines of authored source counted so far">0</output>
-    <span class="map__depth-unit">lines of authored source</span>
-  </p>
-  <a class="map__cta" href="#contact">Email Juan</a>
-</nav>
+  <header class="masthead">
+    <p class="kicker">
+      <span>Tr3s del Valle · operations automation</span>
+      <span>Case pack</span>
+      <span id="measured-on">Reading the evidence file…</span>
+    </p>
+    <h1 id="pack-title">Six systems, and the data problems under them</h1>
+    <p class="standfirst" id="pack-standfirst"></p>
+    <dl class="totals" id="totals"></dl>
+  </header>
 
-<main data-sc-mode="worldflight" data-sc-seam="0.16" data-sc-lerp="0.12">
+  <div class="cols">
 
-  <div data-sc-world>
-    <canvas id="corridor" aria-hidden="true"></canvas>
-
-    <!-- Dust, at two depths. Screen-blended so the plate's black ground drops
-         out and only the motes survive. It is the cheapest depth on the page:
-         geometry alone reads as a diagram, and a corridor with something
-         suspended in it reads as a place. -->
-    <div class="dust" aria-hidden="true"><i data-dust="0"></i><i data-dust="1"></i></div>
-
-    <!-- The CSS 3D scene. Decorative: every fact it carries is stated in the
-         copy layer as real text, so a reader who never sees it loses nothing. -->
-    <div class="scene" aria-hidden="true">
-      <div class="scene__cam" id="cam"></div>
-    </div>
-
-    <!-- Ten legs, one per project plus arrival, the dark stretch, the ledger
-         and the end wall. Empty by design: they are the timing spine that
-         publishes --sc-seg and fires sc:waypoint. The world they time is the
-         canvas and the 3D scene above, which never crossfade because they
-         never cut.
-
-         One project per leg is not a layout preference. Two projects sharing a
-         leg shared one description, so the heading could not be true of the
-         panel on screen: at 32% the copy read "the quoting problem, twice"
-         while the reader was looking at Data Triage and the Outbound Log. -->
-    <div data-sc-segment data-sc-w="1.0" data-sc-waypoint="Arrival"></div>
-    <div data-sc-segment data-sc-w="1.3" data-sc-waypoint="Rutero TDV"></div>
-    <div data-sc-segment data-sc-w="1.0" data-sc-waypoint="Cotizador TDV"></div>
-    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="Farmers Fresh"></div>
-    <div data-sc-segment data-sc-w="1.0" data-sc-waypoint="Data Triage"></div>
-    <div data-sc-segment data-sc-w="1.0" data-sc-waypoint="Outbound Log"></div>
-    <div data-sc-segment data-sc-w="1.1" data-sc-waypoint="Currents"></div>
-    <div data-sc-segment data-sc-w="0.7" data-sc-waypoint="Dark stretch"></div>
-    <div data-sc-segment data-sc-w="1.8" data-sc-waypoint="The hard parts"></div>
-    <div data-sc-segment data-sc-w="2.6" data-sc-linger="0.42" data-sc-waypoint="The ledger"></div>
-    <div data-sc-segment data-sc-w="1.2" data-sc-waypoint="End wall"></div>
-  </div>
-
-  <div data-sc-world-copy>
-    <div class="sc-world__scrim scrim" aria-hidden="true"></div>
-
-    <!-- 1 · ARRIVAL — suspicion -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0 0.066 0 0.55">
-      <h1 class="sc-display sc-display--xl">Six systems, running.</h1>
-      <!-- The span is empty here for the same reason every other figure is: it
-           is derived from evidence.json in the browser. It used to read "seven
-           weeks", which was the one claim in the hero that nothing measured,
-           and the file does not support it: first commit to last across the
-           five is 43 days, six weeks and a day. Rounding that up to seven is
-           the exact move the caveat at the ledger refuses to make. -->
-      <p class="sc-body">Five built for a produce distributor in McAllen. First commit to last, <span data-span>a measured span</span>. The sixth is my own. Nothing here is a mockup.</p>
-      <!-- The way out, offered here rather than only at the ledger. A flight is
-           a commitment, and a reader who does not want to make one was
-           previously not told there was a written version until they had flown
-           six of the eleven legs. -->
-      <p class="note">Lines, commits and tests are being counted right now, out of a file you can download. Money is quoted, not measured. <a href="/evidence.html">Read it as a page instead.</a></p>
-    </div>
-
-    <!-- 2 · RUTERO — scale -->
-    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.076 0.164 0.16 0.16" data-system="rutero-tdv">
-      <p class="kicker" data-field="cat"></p>
-      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
-      <p class="sc-body" data-field="line"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <div class="audit" data-audit></div>
-      <p class="hard" data-field="hard"></p>
-      <p class="shift"><i>Was</i> <span data-field="was"></span><span class="then"><i>Now</i> <b data-field="now"></b></span></p>
-      <p class="risk" data-field="risk"></p>
-      <a class="out" data-field="url" href="#">Open it</a>
-    </div>
-
-    <!-- 3 · COTIZADOR TDV — precision -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.170 0.236 0.18 0.18" data-system="cotizador-tdv">
-      <p class="kicker" data-field="cat"></p>
-      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
-      <p class="sc-body" data-field="line"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <div class="audit" data-audit></div>
-      <p class="hard" data-field="hard"></p>
-      <p class="shift"><i>Was</i> <span data-field="was"></span><span class="then"><i>Now</i> <b data-field="now"></b></span></p>
-      <p class="risk" data-field="risk"></p>
-      <a class="out" data-field="url" href="#">Open it</a>
-    </div>
-
-    <!-- 4 · FARMERS FRESH — repetition, done deliberately -->
-    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.242 0.316 0.18 0.18" data-system="cotizador-farmers-fresh">
-      <p class="kicker" data-field="cat"></p>
-      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
-      <p class="sc-body" data-field="line"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <div class="audit" data-audit></div>
-      <p class="hard" data-field="hard"></p>
-      <p class="shift"><i>Was</i> <span data-field="was"></span><span class="then"><i>Now</i> <b data-field="now"></b></span></p>
-      <p class="risk" data-field="risk"></p>
-      <a class="out" data-field="url" href="#">Open it</a>
-    </div>
-
-    <!-- 5 · DATA TRIAGE — restraint. The one worth nothing. -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.322 0.388 0.18 0.18" data-system="data-triage-center">
-      <p class="kicker" data-field="cat"></p>
-      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
-      <p class="sc-body" data-field="line"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <div class="audit" data-audit></div>
-      <p class="hard" data-field="hard"></p>
-      <p class="shift"><i>Was</i> <span data-field="was"></span><span class="then"><i>Now</i> <b data-field="now"></b></span></p>
-      <p class="risk" data-field="risk"></p>
-      <a class="out" data-field="url" href="#">Open it</a>
-    </div>
-
-    <!-- 6 · OUTBOUND LOG — plainness -->
-    <div class="sc-copy sc-copy--trail plate" data-sc-copy data-sc-window="0.394 0.461 0.18 0.18" data-system="tdv-outbound-log">
-      <p class="kicker" data-field="cat"></p>
-      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
-      <p class="sc-body" data-field="line"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <div class="audit" data-audit></div>
-      <p class="hard" data-field="hard"></p>
-      <p class="shift"><i>Was</i> <span data-field="was"></span><span class="then"><i>Now</i> <b data-field="now"></b></span></p>
-      <p class="risk" data-field="risk"></p>
-      <a class="out" data-field="url" href="#">Open it</a>
-    </div>
-
-    <!-- 7 · CURRENTS — release -->
-    <div class="sc-copy sc-copy--lead plate" data-sc-copy data-sc-window="0.467 0.541 0.16 0.16" data-system="currents">
-      <p class="kicker" data-field="cat"></p>
-      <h2 class="sc-display sc-display--lg" data-field="name"></h2>
-      <p class="sc-body" data-field="line"></p>
-      <p class="sr-only" data-field="alt"></p>
-      <div class="audit" data-audit></div>
-      <p class="hard" data-field="hard"></p>
-      <p class="shift"><i>Was</i> <span data-field="was"></span><span class="then"><i>Now</i> <b data-field="now"></b></span></p>
-      <p class="risk" data-field="risk"></p>
-      <a class="out" data-field="url" href="#">Open it</a>
-    </div>
-
-    <!-- 8 · DARK STRETCH — anticipation. Authored silence, recorded in BRIEF.md.
-         One line, no instrumentation, nothing accumulating. -->
-    <div class="sc-copy sc-copy--center plate plate--bare" data-sc-copy data-sc-window="0.547 0.591 0.28 0.28">
-      <p class="quiet">Lines and commits prove volume. They do not prove judgement.</p>
-    </div>
-
-    <!-- 9 · THE HARD PARTS — the dark stretch just said lines do not prove
-         judgement. This is the page making good on that before the ledger
-         arrives. No panel: judgement is not a screen. The window closes at
-         0.690 and the leg runs to 0.7246, so the last half viewport-height of
-         it is empty corridor. That silence is authored and it is what the peak
-         arrives from. -->
-    <div class="sc-copy plate plate--judgement" data-sc-copy data-sc-window="0.598 0.690 0.14 0.20">
-      <p class="kicker">Seven of them, and every one is committed</p>
-      <h2 class="sc-display sc-display--md">Here is the judgement.</h2>
-      <ol class="hard-list" id="hard-list"></ol>
-      <p class="fine fine--method">Each line names the file where the reasoning is committed next to the fix. <a href="/evidence.html#hard">The written version carries all of it in full.</a></p>
-    </div>
-
-    <!-- 10 · THE LEDGER — reckoning. The peak. -->
-    <div class="sc-copy plate plate--ledger" data-sc-copy data-sc-window="0.728 0.911 0.22 0.10">
-      <h2 class="sc-display sc-display--md">Everything you just flew past.</h2>
-      <div class="ledger-scroll">
-      <table class="ledger" id="ledger">
-        <caption class="sr-only">Lines, commits and tests per system, measured and summed in the browser from the evidence file. The yearly figures are not measured: they are quoted from the source document named under the table.</caption>
-        <thead>
-          <tr><th scope="col">System</th><th scope="col">Lines</th><th scope="col">Commits</th><th scope="col">Tests</th><th scope="col">Per year</th></tr>
-        </thead>
-        <tbody id="ledger-body"></tbody>
-        <tfoot id="ledger-foot"></tfoot>
-      </table>
-      </div>
-      <ul class="notes" id="ledger-notes"></ul>
-      <p class="excluded" id="excluded"></p>
-      <p class="caveat" id="caveat"></p>
-    </div>
-
-    <!-- 11 · THE END WALL — resolve. The CTA is an object in the world. -->
-    <div class="sc-copy sc-copy--center plate plate--end" id="contact" data-sc-copy data-sc-window="finale">
-      <h2 class="sc-display sc-display--lg">This is what it looks like when one person builds it.</h2>
-      <p class="who">Juan J Garibay, software engineer and operator. I build the systems and then run them inside the business that uses them.</p>
-      <a class="wall-plate" id="cta" href="#">Email Juan</a>
-      <p class="fine">
-        <a href="#" id="evidence-link">Read the evidence</a> ·
-        <a href="evidence.json" download>Download the file these numbers came from</a>
+    <nav class="rail" aria-label="Case index">
+      <h2>Cases</h2>
+      <ol id="rail-list"></ol>
+      <p class="rail__out">
+        <a href="/flight.html">Fly it instead</a>
+        <a href="/evidence.html">The written portfolio</a>
+        <a href="evidence.json" download>evidence.json</a>
       </p>
-      <p class="fine fine--method" id="method"></p>
-    </div>
-  </div>
+    </nav>
 
-  <div data-sc-spacer aria-hidden="true"></div>
-</main>
+    <main>
+
+      <div class="pack-error" id="pack-error" hidden>
+        <p>The evidence file could not be read, and this page states no figure of its own —
+        so there is nothing here to show you rather than something possibly wrong.
+        <a href="evidence.json">The file itself</a> is plain JSON, and
+        <a href="/evidence.html">the written portfolio</a> carries the same measurements as text.</p>
+      </div>
+
+      <section class="block" aria-labelledby="reading-label">
+        <h2 class="section-label" id="reading-label">How to read the figures</h2>
+        <div id="reading"></div>
+      </section>
+
+      <section class="block" aria-labelledby="benefit-label">
+        <h2 class="section-label" id="benefit-label">Modelled recurring benefit by system · USD per year</h2>
+        <div id="benefit-chart"></div>
+      </section>
+
+      <div id="pack"></div>
+
+      <footer class="pack-foot">
+        <p id="method"></p>
+        <p>Currents, a personal build with no business lever, is not in this pack. It is on
+        <a href="/flight.html">the flight</a> and on <a href="/evidence.html">the written page</a>.</p>
+        <p>Juan J Garibay · <a href="mailto:jgaribay@tr3sdelvalle.com?subject=Saw%20the%20case%20pack">jgaribay@tr3sdelvalle.com</a></p>
+      </footer>
+
+    </main>
+  </div>
+</div>
 
 <noscript>
-  <div class="noscript">
-    <h2>Six systems, measured</h2>
-    <p>This page derives every figure in the browser from <a href="evidence.json">evidence.json</a>, so with scripting off there is nothing to show you here. The file itself is plain JSON and states the counting rule at the top. <a href="/evidence.html">The written version of this portfolio</a> states the same measurements as plain text.</p>
+  <div class="pack-error">
+    <p>This page counts every figure in the browser from
+    <a href="evidence.json">evidence.json</a>, so with scripting off there is nothing to show
+    here. The file is plain JSON and states its counting rule at the top.
+    <a href="/evidence.html">The written portfolio</a> states the same measurements as plain
+    text.</p>
   </div>
 </noscript>
 
-<!-- Real Core Web Vitals from real devices. Same origin, so script-src 'self'
-     allows it, and it is cookieless: it identifies no one. This is already
-     enabled on the project, which is why it is here and Web Analytics is not.
-     To turn on the milestone events below, enable Web Analytics in the Vercel
-     dashboard and add:
-       <script defer src="/_vercel/insights/script.js"></script>
-     Until then js/world.js records nothing and costs nothing. -->
 <script defer src="/_vercel/speed-insights/script.js"></script>
-<script src="scrollcraft.js"></script>
-<script type="module" src="js/world.js"></script>
+<script src="js/data.js"></script>
+<script type="module" src="js/dossier.js"></script>
 </body>
 </html>

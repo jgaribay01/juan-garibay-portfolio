@@ -1,9 +1,10 @@
 /**
  * Drift guard.
  *
- * Two pages now. `index.html` is the flight, and it states no figure at all:
- * every number it shows is summed in the browser from `evidence.json`, so
- * there is nothing on it to drift and the guard's job there is to prove that
+ * Three pages now. `index.html` is the case pack and `flight.html` is the
+ * flight; neither states a figure at all:
+ * every number they show is summed in the browser from `evidence.json`, so
+ * there is nothing on them to drift and the guard's job there is to prove that
  * stays true. `evidence.html` is the written portfolio, and it is the page
  * this file was originally written for.
  *
@@ -271,7 +272,7 @@ if (!ldMatch) {
 expect('measurement date', P.MEASURED_ON);
 
 /* ===========================================================================
-   The flight (index.html)
+   The flight (flight.html)
    ---------------------------------------------------------------------------
    The written page duplicates figures and is guarded against drift. The flight
    takes the other route: it states none, and sums them in the browser out of
@@ -281,7 +282,7 @@ expect('measurement date', P.MEASURED_ON);
    the flight's own source.
    ========================================================================= */
 
-const flight = read('index.html');
+const flight = read('flight.html');
 const flightJs = read('js/world.js') + read('js/content.js');
 const flightCss = read('css/pitwall.css');
 
@@ -308,7 +309,7 @@ if (!existsSync(join(here, 'evidence.json'))) {
   for (const [label, n] of forbidden) {
     for (const spelling of [String(n), n.toLocaleString('en-US')]) {
       const re = new RegExp(`(^|[^\\d,.])${spelling.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\d,.]|$)`);
-      for (const [where, text] of [['index.html', flight], ['js/*.js', flightJs], ['css/pitwall.css', flightCss]]) {
+      for (const [where, text] of [['flight.html', flight], ['js/*.js', flightJs], ['css/pitwall.css', flightCss]]) {
         if (re.test(text)) {
           failures.push(`flight: ${where} contains the measured figure ${spelling} (${label}). ` +
             'The flight must derive every figure from evidence.json, never state one.');
@@ -350,7 +351,7 @@ for (const tag of flight.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || []) {
   if (/\ssrc\s*=/.test(open)) continue;          // external, allowed by 'self'
   if (DATA_BLOCK.test(open)) continue;            // data, not code
   if (!/>\s*\S/.test(tag.slice(tag.indexOf('>')))) continue;  // empty
-  failures.push(`flight: index.html has an inline executable <script>, which the deployed CSP blocks — ${open.slice(0, 60)}`);
+  failures.push(`flight: flight.html has an inline executable <script>, which the deployed CSP blocks — ${open.slice(0, 60)}`);
 }
 // The money on the flight is quoted, not measured, so it has exactly one source
 // of truth and it is js/data.js. These are the figures the ledger now states
@@ -423,7 +424,7 @@ const SOCIAL = [
   ['structured data', /<script type="application\/ld\+json">/],
 ];
 for (const [name, re] of SOCIAL) {
-  if (!re.test(flight)) failures.push(`flight: index.html has no ${name}, so a shared link renders as a bare URL`);
+  if (!re.test(flight)) failures.push(`flight: flight.html has no ${name}, so a shared link renders as a bare URL`);
 }
 // img/ is immutable for a year, so the card's URL has to move when the card does.
 for (const tag of ['og:image', 'twitter:image']) {
@@ -479,7 +480,7 @@ if (existsSync(join(here, 'evidence.json'))) {
     failures.push('build span: evidence.json carries no commit dates for the business systems');
   } else {
     const weeks = (Math.max(...stamps) - Math.min(...stamps)) / 86400000 / 7;
-    for (const [file, text] of [['index.html', read('index.html')], ['og-source.html', ogSource]]) {
+    for (const [file, text] of [['flight.html', read('flight.html')], ['og-source.html', ogSource]]) {
       const claim = text.match(/built in (\w+) weeks/);
       if (!claim) continue;
       const words = { four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
@@ -495,6 +496,148 @@ if (existsSync(join(here, 'evidence.json'))) {
 
 if (!/connect-src 'self'/.test(read('vercel.json'))) {
   failures.push("vercel.json: the flight fetches evidence.json, so CSP needs connect-src 'self'");
+}
+
+/* ===========================================================================
+   The case pack (index.html)
+   ---------------------------------------------------------------------------
+   The pack is the front door now, and it lives under the flight's rule rather
+   than the written page's: it states no measured figure at all, and derives
+   every one in the browser from evidence.json. js/cases.js carries the prose
+   with tokens — {loc}, {commits}, {tests} — where a number belongs, and
+   js/dossier.js fills them in.
+
+   So the guard here is the same inverse guard the flight gets: it fails if a
+   measured figure appears anywhere in the pack's own source. That rule is also
+   the subject of CS-06 on the page itself, which would be an embarrassing
+   thing to publish unguarded.
+   ========================================================================= */
+
+const pack = read('index.html');
+const packJs = read('js/cases.js') + read('js/dossier.js');
+const packCss = read('css/dossier.css');
+const casesSource = read('js/cases.js');
+
+if (existsSync(join(here, 'evidence.json'))) {
+  const EV = JSON.parse(read('evidence.json'));
+  const live = EV.repos.filter((r) => !r.missing);
+
+  const forbidden = [];
+  for (const r of live) {
+    for (const n of [r.linesTotal, r.linesCode, r.commits, r.suite?.passed, r.deck?.cards]) {
+      if (typeof n === 'number' && n >= 100) forbidden.push([r.id, n]);
+    }
+  }
+  forbidden.push(['total lines', live.reduce((s, r) => s + r.linesTotal, 0)]);
+  forbidden.push(['total commits', live.reduce((s, r) => s + r.commits, 0)]);
+  forbidden.push(['total tests', live.reduce((s, r) => s + (r.suite?.passed || 0), 0)]);
+
+  for (const [label, n] of forbidden) {
+    for (const spelling of [String(n), n.toLocaleString('en-US')]) {
+      const re = new RegExp(`(^|[^\\d,.])${spelling.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\d,.]|$)`);
+      for (const [where, text] of [
+        ['index.html', pack],
+        ['js/cases.js + js/dossier.js', packJs],
+        ['css/dossier.css', packCss],
+      ]) {
+        if (re.test(text)) {
+          failures.push(`pack: ${where} contains the measured figure ${spelling} (${label}). ` +
+            'The case pack must derive every figure from evidence.json, never state one.');
+        }
+      }
+    }
+  }
+}
+
+// Same CSP trap as the flight: an inline executable script is dropped and the
+// pack renders as an empty shell, silently.
+for (const tag of pack.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) || []) {
+  const open = tag.slice(0, tag.indexOf('>') + 1);
+  if (/\ssrc\s*=/.test(open)) continue;
+  if (DATA_BLOCK.test(open)) continue;
+  if (!/>\s*\S/.test(tag.slice(tag.indexOf('>')))) continue;
+  failures.push(`pack: index.html has an inline executable <script>, which the deployed CSP blocks — ${open.slice(0, 60)}`);
+}
+
+// The pack renders nothing without scripting, so the way out has to be stated
+// in markup a scriptless reader can actually see.
+if (!/<noscript>[\s\S]*evidence\.json[\s\S]*<\/noscript>/.test(pack)) {
+  failures.push('pack: index.html has no <noscript> fallback naming evidence.json');
+}
+
+for (const [name, re] of SOCIAL) {
+  if (!re.test(pack)) failures.push(`pack: index.html has no ${name}, so a shared link renders as a bare URL`);
+}
+for (const tag of ['og:image', 'twitter:image']) {
+  const found = pack.match(new RegExp(`(?:property|name)="${tag}" content="([^"]+)"`));
+  if (!found) { failures.push(`pack: ${tag} is missing`); continue; }
+  if (!found[1].includes(`?v=${P.MEASURED_ON}`)) {
+    failures.push(`pack: ${tag} is not versioned with ?v=${P.MEASURED_ON}, so the cached card outlives the measurement`);
+  }
+}
+
+// Every case must resolve to a name, and the ld+json must list exactly those
+// names in the same order. A case whose id matches no project and declares no
+// name of its own would render as a raw id on the page.
+{
+  const orderBlock = casesSource.slice(
+    casesSource.indexOf('export const CASE_ORDER'),
+    casesSource.indexOf('export const CASES'),
+  );
+  const order = [...orderBlock.matchAll(/'([\w-]+)'/g)].map((m) => m[1]);
+  const casesBlock = casesSource.slice(
+    casesSource.indexOf('export const CASES'),
+    casesSource.indexOf('export const PREAMBLE'),
+  );
+  const declaredName = (id) => {
+    const at = casesBlock.indexOf(`\n  '${id}': {`);
+    if (at === -1) return undefined;
+    const found = casesBlock.slice(at + 1, at + 2600).match(/\n    name: '((?:[^'\\]|\\.)*)'/);
+    return found ? found[1].replace(/\\'/g, "'") : null;
+  };
+
+  if (!order.length) failures.push('pack: js/cases.js declares no CASE_ORDER');
+
+  const names = [];
+  for (const id of order) {
+    const declared = declaredName(id);
+    if (declared === undefined) { failures.push(`pack: CASE_ORDER lists "${id}", which has no entry in CASES`); continue; }
+    const project = P.PROJECTS.find((p) => p.id === id);
+    if (!project && !declared) {
+      failures.push(`pack: "${id}" matches no project in js/data.js and declares no name of its own`);
+      continue;
+    }
+    names.push(project ? project.name : declared);
+  }
+
+  const ld = pack.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  if (!ld) {
+    failures.push('pack: index.html has no ld+json block');
+  } else {
+    let graph = null;
+    try { graph = JSON.parse(ld[1]); } catch (error) { failures.push(`pack: ld+json does not parse — ${error.message}`); }
+    if (graph) {
+      const listed = ((graph['@graph'] || []).find((n) => n['@type'] === 'ItemList')?.itemListElement || [])
+        .map((entry) => entry.item?.name);
+      for (const name of names) {
+        if (!listed.includes(name)) failures.push(`pack: ld+json is missing "${name}", which the pack renders`);
+      }
+      for (const name of listed) {
+        if (!names.includes(name)) failures.push(`pack: ld+json lists "${name}", which the pack does not render`);
+      }
+      const list = (graph['@graph'] || []).find((n) => n['@type'] === 'ItemList');
+      if (list && list.numberOfItems !== names.length) {
+        failures.push(`pack: ld+json says ${list.numberOfItems} cases, js/cases.js has ${names.length}`);
+      }
+    }
+  }
+
+  // A case that carries a token js/dossier.js cannot resolve renders the token
+  // itself — a literal "{loc}" on the page — so the vocabulary is fixed here.
+  const KNOWN = ['files', 'loc', 'code', 'commits', 'activeDays', 'testFiles', 'tests', 'sqlFiles', 'sqlLines'];
+  for (const [, token] of casesSource.matchAll(/\{(\w+)\}/g)) {
+    if (!KNOWN.includes(token)) failures.push(`pack: js/cases.js uses the token {${token}}, which js/dossier.js does not resolve`);
+  }
 }
 
 if (failures.length) {
