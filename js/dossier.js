@@ -362,6 +362,24 @@ async function main() {
     '<a href="/evidence.html">read the written portfolio</a>.';
 
   document.documentElement.dataset.packReady = 'true';
+
+  /* The instrument's readout is the real one: js/scanner.js reports what this
+     render actually counted, not a script of plausible-looking lines.
+
+     The reading is PARKED before it is announced. js/scanner.js imports a
+     module of its own, so its listener can attach after this line runs — and
+     when the fetch came from cache it did, which left the loader waiting for
+     an event that had already happened. An event nobody heard is not a
+     reading; a parked value can be picked up late. */
+  const readout = {
+    generatedAt: evidence.generatedAt,
+    repos: live.length,
+    files: num(total((r) => r.files)),
+    cases: CASE_ORDER.length,
+  };
+  window.PACK_READING = readout;
+  document.dispatchEvent(new CustomEvent('pack:ready', { detail: readout }));
+
   if (evidence.generatedAt !== MEASURED_ON) {
     console.warn(`dossier: evidence.json is ${evidence.generatedAt}, js/data.js says ${MEASURED_ON}`);
   }

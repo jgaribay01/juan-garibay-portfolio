@@ -514,8 +514,8 @@ if (!/connect-src 'self'/.test(read('vercel.json'))) {
    ========================================================================= */
 
 const pack = read('index.html');
-const packJs = read('js/cases.js') + read('js/dossier.js');
-const packCss = read('css/dossier.css');
+const packJs = read('js/cases.js') + read('js/dossier.js') + read('js/scanner.js') + read('js/gl-scanner.js');
+const packCss = read('css/dossier.css') + read('css/scanner.css');
 const casesSource = read('js/cases.js');
 
 if (existsSync(join(here, 'evidence.json'))) {
@@ -537,8 +537,8 @@ if (existsSync(join(here, 'evidence.json'))) {
       const re = new RegExp(`(^|[^\\d,.])${spelling.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\d,.]|$)`);
       for (const [where, text] of [
         ['index.html', pack],
-        ['js/cases.js + js/dossier.js', packJs],
-        ['css/dossier.css', packCss],
+        ['the pack scripts', packJs],
+        ['the pack stylesheets', packCss],
       ]) {
         if (re.test(text)) {
           failures.push(`pack: ${where} contains the measured figure ${spelling} (${label}). ` +
@@ -637,6 +637,37 @@ for (const tag of ['og:image', 'twitter:image']) {
   const KNOWN = ['files', 'loc', 'code', 'commits', 'activeDays', 'testFiles', 'tests', 'sqlFiles', 'sqlLines'];
   for (const [, token] of casesSource.matchAll(/\{(\w+)\}/g)) {
     if (!KNOWN.includes(token)) failures.push(`pack: js/cases.js uses the token {${token}}, which js/dossier.js does not resolve`);
+  }
+}
+
+/* The motion layer is vendored, never fetched. The deployed CSP is
+   script-src 'self', so a CDN tag is dropped with no error anywhere the author
+   would see it: the page just never animates, and it looks like a bug in the
+   timeline rather than a blocked request. Both halves are checked — the files
+   have to be present, and nothing may point off-origin. */
+for (const file of ['vendor/gsap.min.js', 'vendor/ScrollTrigger.min.js',
+                    'vendor/SplitText.min.js', 'vendor/lenis.min.js',
+                    'vendor/lenis.css']) {
+  if (!existsSync(join(here, file))) {
+    failures.push(`pack: ${file} is missing — index.html loads it and the CSP forbids a CDN fallback`);
+  }
+}
+for (const page of [['index.html', pack], ['flight.html', flight], ['evidence.html', html]]) {
+  const [name, text] = page;
+  for (const tag of text.match(/<script\b[^>]*\ssrc\s*=\s*"([^"]+)"[^>]*>/gi) || []) {
+    const src = (tag.match(/src\s*=\s*"([^"]+)"/i) || [])[1] || '';
+    if (/^https?:/i.test(src) || src.startsWith('//')) {
+      failures.push(`${name}: loads ${src} off-origin, which the deployed CSP (script-src 'self') drops silently`);
+    }
+  }
+}
+
+// Same for stylesheets and fonts: style-src and font-src are 'self' too.
+for (const tag of pack.match(/<link\b[^>]*>/gi) || []) {
+  const href = (tag.match(/href\s*=\s*"([^"]+)"/i) || [])[1] || '';
+  const rel = (tag.match(/rel\s*=\s*"([^"]+)"/i) || [])[1] || '';
+  if (/^https?:|^\/\//.test(href) && /stylesheet|preload/i.test(rel)) {
+    failures.push(`pack: index.html links ${href} off-origin as ${rel}, which the deployed CSP blocks`);
   }
 }
 

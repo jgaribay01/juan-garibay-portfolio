@@ -12,3 +12,10 @@ css/fonts/full/
 
 # Knowledge-graph output — build artefact, regenerate with /graphify
 graphify-out/
+
+# tooling scratch
+.playwright-mcp/
+hero.png
+shot-hero.png
+v2-*.png
+v3-*.png
