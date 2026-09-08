@@ -4,19 +4,23 @@
      figures change, instead of becoming a stale binary nobody can rebuild.
      Excluded from deploys via .vercelignore.
 
-     Restyled 24 Aug 2026 to match the flight that is now the front page: the
-     same near-black, the same single orange, and the same nested gantry frames
-     the corridor is built from. A social card that does not look like the page
-     it links to is a broken promise before anyone has clicked. -->
+     Restyled 8 Sep 2026 for the case pack that is now the front page: the
+     site's own near-black and its one green, and the Code 128 field the page
+     draws in a shader, drawn here in CSS. A social card that does not look
+     like the page it links to is a broken promise before anyone has clicked.
+
+     The figures here cover all SIX builds — every repository in
+     evidence.json, Currents included — which is why they are larger than the
+     five-tool totals the pack itself shows. check.mjs asserts each one
+     against js/data.js, because nothing can read a number once it is inside
+     a PNG.
+
+     Type is self-hosted from css/fonts.css rather than fetched from a CDN, so
+     the render is deterministic and needs no network. -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-    />
+    <link rel="stylesheet" href="css/fonts.css" />
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -24,46 +28,59 @@
         width: 1200px;
         height: 630px;
         overflow: hidden;
-        background: #05070b;
-        color: #edf3f8;
+        background: #0a0b0d;
+        color: #e7eaee;
         font-family: 'Space Grotesk', system-ui, sans-serif;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 58px 64px 46px;
+        padding: 54px 64px 46px;
         position: relative;
         -webkit-font-smoothing: antialiased;
       }
 
-      /* A real corridor behind, and the CSS frames on top of it. The drawn
-         frames stay: they are what ties the card to the page, which is built
-         out of exactly that shape. */
-      .plate {
-        position: absolute; inset: 0;
-        width: 100%; height: 100%;
-        object-fit: cover;
-        opacity: 0.72;
+      /* The field. The page draws this in a fragment shader — bands of Code 128
+         bars at four depths with a beam sweeping them. Here it is that field at
+         the moment of one sweep, which is all a still card can be. */
+      .field { position: absolute; inset: 0; overflow: hidden; }
+      .field i {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background: #4ade80;
       }
 
-      /* The corridor, in CSS. Nested frames receding to a vanishing point set
-         right of centre, exactly like the page: the type holds the left. */
-      .corridor { position: absolute; inset: 0; overflow: hidden; }
-      /* Density only where the type sits, same as the page. Without it the
-         frames run straight through the headline and the sub. */
-      .corridor::after {
+      /* The beam, caught mid-pass on the right, where the type is not. */
+      .beam {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 74%;
+        width: 260px;
+        background: radial-gradient(ellipse at center,
+          rgba(74, 222, 128, 0.30) 0%,
+          rgba(74, 222, 128, 0.10) 45%,
+          transparent 72%);
+      }
+
+      /* Density only where the type is not, same as the page: the field is at
+         full strength on the right and gone under the headline. */
+      .field::after {
         content: '';
         position: absolute; inset: 0;
         background: linear-gradient(to right,
-          #05070b 0%, #05070b 34%,
-          rgba(5, 7, 11, 0.86) 48%,
-          rgba(5, 7, 11, 0.35) 64%,
-          transparent 78%);
+          #0a0b0d 0%, #0a0b0d 33%,
+          rgba(10, 11, 13, 0.90) 46%,
+          rgba(10, 11, 13, 0.55) 62%,
+          rgba(10, 11, 13, 0.18) 80%,
+          transparent 100%);
       }
-      .corridor i {
-        position: absolute;
-        left: 50%; top: 50%;
-        border: 1px solid #ff4e12;
-        transform: translate(-50%, -50%);
+
+      /* The vignette the shader ends on. */
+      .vignette {
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 90% 80% at 50% 50%,
+          transparent 40%, rgba(10, 11, 13, 0.55) 100%);
       }
 
       .byline {
@@ -71,77 +88,121 @@
         font-family: 'JetBrains Mono', monospace;
         font-size: 15px;
         letter-spacing: 0.1em;
-        color: #8fa3b4;
+        color: #7c8492;
         display: flex;
         gap: 10px;
         align-items: baseline;
       }
-      .byline strong { color: #edf3f8; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+      .byline strong {
+        color: #e7eaee;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
 
-      .top { position: relative; max-width: 720px; }
+      .top { position: relative; max-width: 760px; }
 
       .kicker {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 15px;
+        font-size: 14px;
         letter-spacing: 0.17em;
         text-transform: uppercase;
-        color: #ff4e12;
-        margin-bottom: 20px;
+        color: #4ade80;
+        margin-bottom: 18px;
       }
 
       h1 {
-        font-size: 74px;
+        font-size: 64px;
         line-height: 0.98;
         letter-spacing: -0.035em;
         font-weight: 700;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
       }
 
       .sub {
-        font-size: 20px;
+        font-size: 19px;
         line-height: 1.5;
-        color: #8fa3b4;
-        max-width: 610px;
+        color: #99a1ad;
+        max-width: 640px;
       }
 
       .stats {
         position: relative;
         display: flex;
-        gap: 46px;
-        border-top: 1px solid rgba(237, 243, 248, 0.14);
-        padding-top: 24px;
+        gap: 44px;
+        border-top: 1px solid rgba(231, 234, 238, 0.14);
+        padding-top: 22px;
       }
       .stat-value {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 34px;
+        font-size: 33px;
         font-weight: 600;
         letter-spacing: -0.02em;
         font-variant-numeric: tabular-nums;
         line-height: 1;
       }
-      .stat-value.accent { color: #ff4e12; }
+      .stat-value.accent { color: #4ade80; }
       .stat-label {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 12.5px;
+        font-size: 12px;
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        color: #8fa3b4;
+        color: #7c8492;
         margin-top: 9px;
       }
     </style>
   </head>
   <body>
-    <img class="plate" src="img/og-plate.webp" alt="" />
-    <div class="corridor" aria-hidden="true">
-      <i style="width:1560px;height:980px;margin-left:300px;opacity:0.10"></i>
-      <i style="width:1180px;height:742px;margin-left:300px;opacity:0.16"></i>
-      <i style="width:892px;height:561px;margin-left:300px;opacity:0.24"></i>
-      <i style="width:675px;height:424px;margin-left:300px;opacity:0.34"></i>
-      <i style="width:510px;height:321px;margin-left:300px;opacity:0.46"></i>
-      <i style="width:386px;height:243px;margin-left:300px;opacity:0.60"></i>
-      <i style="width:292px;height:184px;margin-left:300px;opacity:0.76"></i>
-      <i style="width:221px;height:139px;margin-left:300px;opacity:0.92"></i>
+    <!-- Bar widths are quantised to four values, which is what makes a barcode
+         read as a barcode rather than as a stripe pattern. -->
+    <div class="field" aria-hidden="true">
+      <i style="left:612px;width:3px;opacity:0.10"></i>
+      <i style="left:624px;width:8px;opacity:0.13"></i>
+      <i style="left:640px;width:3px;opacity:0.09"></i>
+      <i style="left:651px;width:5px;opacity:0.16"></i>
+      <i style="left:664px;width:3px;opacity:0.11"></i>
+      <i style="left:674px;width:11px;opacity:0.18"></i>
+      <i style="left:694px;width:3px;opacity:0.12"></i>
+      <i style="left:704px;width:5px;opacity:0.20"></i>
+      <i style="left:718px;width:8px;opacity:0.15"></i>
+      <i style="left:734px;width:3px;opacity:0.22"></i>
+      <i style="left:744px;width:11px;opacity:0.26"></i>
+      <i style="left:764px;width:5px;opacity:0.18"></i>
+      <i style="left:777px;width:3px;opacity:0.24"></i>
+      <i style="left:787px;width:8px;opacity:0.30"></i>
+      <i style="left:803px;width:3px;opacity:0.21"></i>
+      <i style="left:814px;width:5px;opacity:0.34"></i>
+      <i style="left:827px;width:11px;opacity:0.40"></i>
+      <i style="left:846px;width:3px;opacity:0.28"></i>
+      <i style="left:857px;width:8px;opacity:0.46"></i>
+      <i style="left:873px;width:3px;opacity:0.33"></i>
+      <i style="left:884px;width:5px;opacity:0.55"></i>
+      <i style="left:897px;width:3px;opacity:0.38"></i>
+      <i style="left:908px;width:11px;opacity:0.68"></i>
+      <i style="left:927px;width:5px;opacity:0.52"></i>
+      <i style="left:940px;width:3px;opacity:0.80"></i>
+      <i style="left:951px;width:8px;opacity:0.72"></i>
+      <i style="left:967px;width:3px;opacity:0.58"></i>
+      <i style="left:978px;width:5px;opacity:0.86"></i>
+      <i style="left:991px;width:3px;opacity:0.64"></i>
+      <i style="left:1002px;width:11px;opacity:0.78"></i>
+      <i style="left:1021px;width:3px;opacity:0.50"></i>
+      <i style="left:1032px;width:8px;opacity:0.62"></i>
+      <i style="left:1048px;width:5px;opacity:0.44"></i>
+      <i style="left:1061px;width:3px;opacity:0.36"></i>
+      <i style="left:1072px;width:11px;opacity:0.40"></i>
+      <i style="left:1091px;width:3px;opacity:0.26"></i>
+      <i style="left:1102px;width:5px;opacity:0.30"></i>
+      <i style="left:1115px;width:8px;opacity:0.22"></i>
+      <i style="left:1131px;width:3px;opacity:0.17"></i>
+      <i style="left:1142px;width:5px;opacity:0.20"></i>
+      <i style="left:1155px;width:3px;opacity:0.13"></i>
+      <i style="left:1166px;width:11px;opacity:0.15"></i>
+      <i style="left:1185px;width:3px;opacity:0.09"></i>
+      <div class="beam"></div>
     </div>
+    <div class="vignette" aria-hidden="true"></div>
 
     <div class="byline">
       <strong>Juan J Garibay</strong>
@@ -150,17 +211,18 @@
 
     <div class="top">
       <div class="kicker">Measured 24 Aug 2026</div>
-      <h1>Six systems, running.</h1>
+      <h1>Six systems, and the data problems under them.</h1>
       <p class="sub">
-        Five built in six weeks for a produce distributor. The sixth is my own. Every figure on
-        the site is counted in your browser, out of a file you can download.
+        Five built in six weeks for a produce distributor, and the guard that keeps their
+        figures honest. Every number on the site is counted in your browser, out of a file
+        you can download.
       </p>
     </div>
 
     <div class="stats">
       <div class="stat">
         <div class="stat-value">6</div>
-        <div class="stat-label">Systems live</div>
+        <div class="stat-label">Builds measured</div>
       </div>
       <div class="stat">
         <div class="stat-value">99,051</div>
